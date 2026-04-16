@@ -12,8 +12,8 @@ Usage:
 This script configures a GitHub repository with:
 
 Environments:
-  gh-pages -> only branch gh-pages
-  main     -> only branch main
+  github-pages -> branches master and gh-pages
+  main         -> only branch main
 
 Repository secrets:
   PGP_PASSPHRASE
@@ -24,6 +24,9 @@ Repository secrets:
 
 Repository variable:
   SONATYPE_USERNAME=TSwfhAIy
+
+Security settings:
+  Enables vulnerability alerts, which also enables the dependency graph.
 
 Secret sources:
 1. Plain environment variables:
@@ -142,6 +145,11 @@ gh_variable_set() {
   gh variable set "$name" --repo "$repo" --body "$value"
 }
 
+enable_dependency_graph() {
+  gh_api --method PUT "/repos/${repo}/vulnerability-alerts" >/dev/null
+  echo "Enabled vulnerability alerts and dependency graph"
+}
+
 resolve_value() {
   local env_name="$1"
   local op_ref_name="$2"
@@ -236,8 +244,13 @@ set_branch_policy() {
   echo "Set environment ${env_name} branch policy to ${branch_name}"
 }
 
-ensure_environment "gh-pages"
-set_branch_policy "gh-pages" "gh-pages"
+ensure_environment "github-pages"
+set_branch_policy "github-pages" "master"
+gh_api --method POST "/repos/${repo}/environments/github-pages/deployment-branch-policies" \
+  -f name="gh-pages" \
+  -f type="branch" \
+  >/dev/null
+echo "Set environment github-pages branch policy to gh-pages"
 
 ensure_environment "main"
 set_branch_policy "main" "main"
@@ -250,3 +263,5 @@ set_secret "SONATYPE_USERNAME"
 
 gh_variable_set "SONATYPE_USERNAME" "$repo_var_sonatype_username"
 echo "Set repo variable SONATYPE_USERNAME=${repo_var_sonatype_username}"
+
+enable_dependency_graph
