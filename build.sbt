@@ -1,13 +1,13 @@
 import scala.sys.process._
 
-ThisBuild / tlBaseVersion := "0.1"
-ThisBuild / licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
-ThisBuild / startYear := Some(2026)
-ThisBuild / scalaVersion := "2.13.18"
-ThisBuild / tlSitePublishBranch := Some("master")
-ThisBuild / tlCiReleaseBranches := Seq("master")
+ThisBuild / tlBaseVersion              := "0.1"
+ThisBuild / licenses                   += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
+ThisBuild / startYear                  := Some(2026)
+ThisBuild / scalaVersion               := "2.13.18"
+ThisBuild / tlSitePublishBranch        := Some("master")
+ThisBuild / tlCiReleaseBranches        := Seq("master")
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
-ThisBuild / tlCiReleaseTags := false
+ThisBuild / tlCiReleaseTags            := false
 
 ThisBuild / libraryDependencies += compilerPlugin(
   "org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.full,
@@ -26,15 +26,14 @@ inThisBuild(
 //    scalaVersion      := "2.13.18",
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
-    scalacOptions     += "-Wunused:imports",
+    scalacOptions    ++= Seq("-Wunused:imports", "-Werror"),
   ),
 )
 
 lazy val commonSettings = Seq(
-  organization := "io.github.mercurievv.aidclimbing",
+  organization         := "io.github.mercurievv.aidclimbing",
   pgpPassphrase        := sys.env.get("GPG_PASSPHRASE").map(_.toArray),
   headerLicense        := Some(HeaderLicense.ALv2("2026", "Viktors Kalinins")),
-  scalacOptions        += "-Wunused:imports",
   semanticdbEnabled    := true,
   semanticdbVersion    := scalafixSemanticdb.revision,
   publish / skip       := isAlreadyPublished.value,
@@ -53,13 +52,13 @@ lazy val commonSettings = Seq(
 lazy val root = (project in file("."))
   .aggregate(core, ce, filePersister, all, docs)
   .settings(
-    name    := "aidclimbing",
-    publish := {},
-    publishLocal := {},
-    publish / skip := true,
+    name            := "aidclimbing",
+    publish         := {},
+    publishLocal    := {},
+    publish / skip  := true,
     publishArtifact := false,
-    publishTo := None,
-    prePush := Def
+    publishTo       := None,
+    prePush         := Def
       .sequential(
         clean,
         scalafmtAll,
@@ -121,17 +120,17 @@ lazy val docs = project
 //    scalaVersion := "2.13.18",
 //    crossScalaVersions := Seq("2.13.18"),
     tlSiteIsTypelevelProject := Some(TypelevelProject.Affiliate),
-    libraryDependencies += "org.typelevel" %% "log4cats-noop" % log4catsVersion,
-    mdocVariables := Map(
+    libraryDependencies      += "org.typelevel" %% "log4cats-noop" % log4catsVersion,
+    mdocVariables            := Map(
       "AIDCLIMBING_VERSION" -> version.value,
     ),
   )
   .settings(NoPublishPlugin.projectSettings)
 
 lazy val isAlreadyPublished = Def.setting {
-  val org  = organization.value
+  val org = organization.value
   val name = moduleName.value
-  val ver  = version.value
+  val ver = version.value
   if (isSnapshot.value) false
   else isPublished(org, name, ver)
 }

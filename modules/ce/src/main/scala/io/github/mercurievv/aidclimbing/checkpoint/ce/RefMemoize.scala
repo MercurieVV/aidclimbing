@@ -24,12 +24,11 @@ import io.github.mercurievv.aidclimbing.checkpoint.Memoize
 import scala.reflect.ClassTag
 
 /** In-memory Memoize backed by a cats-effect Ref.
- *
- *  Repr = Any: values are stored without serialization (same JVM, type preserved).
- *  Retrieved values are checked against the requested runtime type.
- */
-class RefMemoize[F[_]: Sync] private (ref: Ref[F, Map[String, Any]])
-    extends Memoize[F] {
+  *
+  * Repr = Any: values are stored without serialization (same JVM, type preserved). Retrieved values are checked against
+  * the requested runtime type.
+  */
+class RefMemoize[F[_]: Sync] private (ref: Ref[F, Map[String, Any]]) extends Memoize[F] {
 
   type Repr = Any
 
@@ -39,7 +38,11 @@ class RefMemoize[F[_]: Sync] private (ref: Ref[F, Map[String, Any]])
     repr match {
       case value: V => Right(value)
       case _        =>
-        Left(new ClassCastException(s"Expected ${implicitly[ClassTag[V]].runtimeClass.getName}, got ${repr.getClass.getName}"))
+        Left(
+          new ClassCastException(
+            s"Expected ${implicitly[ClassTag[V]].runtimeClass.getName}, got ${repr.getClass.getName}",
+          ),
+        )
     }
 
   def get[K: Show, V: ClassTag](key: K): F[Option[V]] =
@@ -59,6 +62,7 @@ class RefMemoize[F[_]: Sync] private (ref: Ref[F, Map[String, Any]])
 }
 
 object RefMemoize {
+
   def make[F[_]: Sync]: F[Memoize[F]] =
     Ref.of[F, Map[String, Any]](Map.empty).map(new RefMemoize(_))
 }

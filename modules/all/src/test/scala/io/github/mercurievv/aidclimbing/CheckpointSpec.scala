@@ -43,13 +43,13 @@ class CheckpointSpec extends CatsEffectSuite {
         // First call: cache miss → runs expensiveCompute
         r1 <- IO("hello").checkpoint("step1")(identity)(expensiveCompute)
         // Second call: cache hit → expensiveCompute NOT called
-        r2 <- IO("hello").checkpoint("step1")(identity)(expensiveCompute)
+        r2                     <- IO("hello").checkpoint("step1")(identity)(expensiveCompute)
         countAfterCheckpointed <- callCount.get
 
         // --- without checkpoint: same compute, same input ---
         // Each call runs expensiveCompute regardless
-        r3 <- expensiveCompute("hello")
-        r4 <- expensiveCompute("hello")
+        r3              <- expensiveCompute("hello")
+        r4              <- expensiveCompute("hello")
         countAfterPlain <- callCount.get
 
       } yield {
@@ -87,13 +87,13 @@ class CheckpointSpec extends CatsEffectSuite {
             .checkpoint("step2")(identity)(step2)
             .checkpoint("step3")(identity)(step3)
 
-        firstRun <- pipe(" hello ")
-        secondRun <- pipe(" hello ")
+        firstRun          <- pipe(" hello ")
+        secondRun         <- pipe(" hello ")
         countsAfterWarmup <- (step1Calls.get, step2Calls.get, step3Calls.get).tupled
 
         _ <- memoize.delete(Checkpoint.compositeKey("step2", "hello"))
 
-        thirdRun <- pipe(" hello ")
+        thirdRun          <- pipe(" hello ")
         countsAfterDelete <- (step1Calls.get, step2Calls.get, step3Calls.get).tupled
       } yield {
         assertEquals(firstRun, "len=5")

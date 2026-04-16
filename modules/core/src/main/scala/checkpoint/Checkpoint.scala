@@ -33,7 +33,8 @@ object Checkpoint {
 
   implicit def fromMonad[F[_]: Monad](implicit m: Memoize[F]): Checkpoint[F] =
     new Checkpoint[F] {
-      def checkpoint[A, K: Show, V: Show: ClassTag](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V]): F[V] =
+      def checkpoint[A, K: Show, V: Show: ClassTag](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V])
+        : F[V] =
         fa.flatMap { a =>
           val key = compositeKey(checkpointId, keyFn(a))
           m.get[String, V](key).flatMap {

@@ -21,21 +21,24 @@ import cats.effect.Async
 import cats.syntax.all._
 import fs2.Stream
 import fs2.io.file.{Files, Path}
-import io.github.mercurievv.aidclimbing.checkpoint.{Memoize}
+import io.github.mercurievv.aidclimbing.checkpoint.Memoize
 
 import scala.reflect.ClassTag
 
 /** File-system Memoize.
- *
- *  @param dir       directory to store checkpoint files
- *  @param writeFile persists a Repr to a Path
- *  @param readFile  reads a Repr from a Path
- */
-class FilePersister[F[_]: Async, R](
+  *
+  * @param dir
+  *   directory to store checkpoint files
+  * @param writeFile
+  *   persists a Repr to a Path
+  * @param readFile
+  *   reads a Repr from a Path
+  */
+class FilePersister[F[_]: Async: Files, R](
   dir: Path,
   writeFile: (Path, R) => F[Unit],
-  readFile: Path => F[R]
-) extends Memoize[F] {
+  readFile: Path => F[R])
+    extends Memoize[F] {
   override type Repr = R
 
   override def get[K: Show, V: ClassTag](key: K): F[Option[V]] = {
@@ -58,7 +61,8 @@ class FilePersister[F[_]: Async, R](
     Files[F].deleteIfExists(dir / key.show).void
 
   override def deleteAll(keyPrefix: String): F[Unit] =
-    Files[F].list(dir)
+    Files[F]
+      .list(dir)
       .filter(_.fileName.toString.startsWith(keyPrefix))
       .evalMap(Files[F].deleteIfExists(_).void)
       .compile
@@ -70,19 +74,18 @@ class FilePersister[F[_]: Async, R](
 }
 
 object FilePersister {
-  def apply[F[_]: Async, Repr](
+
+  def apply[F[_]: Async: Files, Repr](
     dir: Path,
     writeFile: (Path, Repr) => F[Unit],
-    readFile: Path => F[Repr]
+    readFile: Path => F[Repr],
   ): Memoize[F] =
     new FilePersister(dir, writeFile, readFile)
 
-  def string[F[_]: Async](dir: Path): Memoize[F] =
+  def string[F[_]: Async: Files](dir: Path): Memoize[F] =
     new FilePersister[F, String](
       dir,
-      writeFile = (p, s) =>
-        Stream.emit(s).through(fs2.text.utf8.encode).through(Files[F].writeAll(p)).compile.drain,
-      readFile = p =>
-        Files[F].readAll(p).through(fs2.text.utf8.decode).compile.string
+      writeFile = (p, s) => Stream.emit(s).through(fs2.text.utf8.encode).through(Files[F].writeAll(p)).compile.drain,
+      readFile  = p => Files[F].readAll(p).through(fs2.text.utf8.decode).compile.string,
     )
 }

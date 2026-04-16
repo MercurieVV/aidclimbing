@@ -21,12 +21,11 @@ import cats.Show
 import scala.reflect.ClassTag
 
 /** Storage abstraction for checkpoints.
- *
- *  `Repr` is the serialized form chosen by the implementation
- *  (e.g. String for text files, Array[Byte] for binary).
- *  Callers supply `Serialize.Aux[V, Repr]` / `Deserialize.Aux[V, Repr]`
- *  via smart constructors — they never write `.Aux` by hand.
- */
+  *
+  * `Repr` is the serialized form chosen by the implementation (e.g. String for text files, Array[Byte] for binary).
+  * Callers supply `Serialize.Aux[V, Repr]` / `Deserialize.Aux[V, Repr]` via smart constructors — they never write
+  * `.Aux` by hand.
+  */
 trait Memoize[F[_]] {
   type Repr
   def toRepr[V](v: V): Repr

@@ -26,17 +26,22 @@ import scala.reflect.ClassTag
 /** Checkpoint instance backed by an explicit Memoize[F, Repr]. */
 class CatsCheckpoint[F[_]: Monad, Repr](memoize: Memoize[F])(implicit tell: Tell[F, String]) extends Checkpoint[F] {
 
-  def checkpoint[A, K: Show, V: Show: ClassTag](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V]): F[V] =
+  def checkpoint[A, K: Show, V: Show: ClassTag](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V])
+    : F[V] =
     fa.flatMap { a =>
       val key = Checkpoint.compositeKey(checkpointId, keyFn(a))
-      memoize.get[String, V](key).flatMap {
-        case Some(cached) => cached.pure[F]
-        case None         => compute(a).flatTap(v => memoize.put(key, v))
-      }.flatTap(v => tell.tell(v.show))
+      memoize
+        .get[String, V](key)
+        .flatMap {
+          case Some(cached) => cached.pure[F]
+          case None         => compute(a).flatTap(v => memoize.put(key, v))
+        }
+        .flatTap(v => tell.tell(v.show))
     }
 }
 
 object CatsCheckpoint {
+
   def apply[F[_]: Monad](memoize: Memoize[F])(implicit tell: Tell[F, String]): Checkpoint[F] =
     new CatsCheckpoint(memoize)
 }
