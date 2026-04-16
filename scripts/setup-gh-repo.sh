@@ -28,6 +28,9 @@ Repository variable:
 Security settings:
   Enables vulnerability alerts, which also enables the dependency graph.
 
+Branch setup:
+  Ensures an empty orphan gh-pages branch exists on origin.
+
 Secret sources:
 1. Plain environment variables:
    PGP_PASSPHRASE
@@ -128,6 +131,7 @@ require_cmd() {
 }
 
 require_cmd gh
+require_cmd git
 
 gh_api() {
   gh api -H "Accept: application/vnd.github+json" "$@"
@@ -148,6 +152,28 @@ gh_variable_set() {
 enable_dependency_graph() {
   gh_api --method PUT "/repos/${repo}/vulnerability-alerts" >/dev/null
   echo "Enabled vulnerability alerts and dependency graph"
+}
+
+ensure_gh_pages_branch() {
+  if git ls-remote --exit-code --heads "https://github.com/${repo}.git" gh-pages >/dev/null 2>&1; then
+    echo "Branch gh-pages already exists on origin"
+    return 0
+  fi
+
+  local empty_tree
+  local root_commit
+  local timestamp
+
+  empty_tree="$(git hash-object -t tree /dev/null)"
+  timestamp="$(date +%s) +0000"
+  root_commit="$(
+    printf 'tree %s\nauthor Codex <codex@example.com> %s\ncommitter Codex <codex@example.com> %s\n\nInitialize gh-pages\n' \
+      "$empty_tree" "$timestamp" "$timestamp" |
+      git hash-object -t commit -w --stdin
+  )"
+
+  git push "https://github.com/${repo}.git" "${root_commit}:refs/heads/gh-pages"
+  echo "Created empty orphan gh-pages branch on origin"
 }
 
 resolve_value() {
@@ -265,3 +291,4 @@ gh_variable_set "SONATYPE_USERNAME" "$repo_var_sonatype_username"
 echo "Set repo variable SONATYPE_USERNAME=${repo_var_sonatype_username}"
 
 enable_dependency_graph
+ensure_gh_pages_branch
