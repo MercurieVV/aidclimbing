@@ -32,6 +32,7 @@ inThisBuild(
 )
 
 lazy val commonSettings = Seq(
+  headerLicense        := Some(HeaderLicense.ALv2("2026", "Viktors Kalinins")),
   pgpPassphrase        := sys.env.get("GPG_PASSPHRASE").map(_.toArray),
   scalacOptions        += "-Wunused:imports",
   semanticdbEnabled    := true,
