@@ -1,14 +1,19 @@
 package io.github.mercurievv.aidclimbing
 
 import cats.effect.{IO, Ref}
-import io.github.mercurievv.aidclimbing.checkpoint.ce.{CatsCheckpoint, RefMemoize}
+import cats.mtl.Tell
+import io.github.mercurievv.aidclimbing.checkpoint.ce.{CatsCheckpoint, LogTell, RefMemoize}
 import io.github.mercurievv.aidclimbing.checkpoint.syntax.CheckpointSyntax._
 import munit.CatsEffectSuite
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.noop.NoOpLogger
 
 class CheckpointSpec extends CatsEffectSuite {
 
   test("checkpointed call computes once; same call without checkpoint always recomputes") {
     RefMemoize.make[IO].flatMap { memoize =>
+      implicit val logger: Logger[IO] = NoOpLogger[IO]
+      implicit val teller: Tell[IO, String] = LogTell[IO]
       implicit val cp = CatsCheckpoint(memoize)
 
       // The expensive computation we want to protect

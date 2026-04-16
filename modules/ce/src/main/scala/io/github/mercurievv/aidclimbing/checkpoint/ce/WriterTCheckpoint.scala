@@ -15,7 +15,7 @@ class WriterTCheckpoint[F[_]: Monad, W: Monoid](
   writeT: (Any, Boolean) => W
 ) extends Checkpoint[WriterT[F, W, *]] {
 
-  def checkpoint[A, K: Show, V](
+  def checkpoint[A, K: Show, V: Show](
     fa: WriterT[F, W, A],
     keyFn: A => K,
     compute: A => WriterT[F, W, V]

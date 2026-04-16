@@ -5,6 +5,7 @@ ThisBuild / libraryDependencies += compilerPlugin("org.typelevel" %% "kind-proje
 val catsVersion       = "2.10.0"
 val catsEffectVersion = "3.5.4"
 val fs2Version        = "3.10.0"
+val log4catsVersion   = "2.6.0"
 
 lazy val root = (project in file("."))
   .aggregate(core, ce, filePersister, all)
@@ -15,7 +16,8 @@ lazy val all = (project in file("modules/all"))
   .settings(
     name := "checkpoint-all",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
+      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7"          % Test,
+      "org.typelevel" %% "log4cats-noop"        % log4catsVersion  % Test
     )
   )
 
@@ -32,7 +34,9 @@ lazy val ce = (project in file("modules/ce"))
   .settings(
     name := "checkpoint-ce",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect" % catsEffectVersion
+      "org.typelevel" %% "cats-effect"   % catsEffectVersion,
+      "org.typelevel" %% "cats-mtl"     % "1.3.0",
+      "org.typelevel" %% "log4cats-core" % log4catsVersion
     )
   )
 
