@@ -1,7 +1,6 @@
 import scala.sys.process._
 
 ThisBuild / tlBaseVersion := "0.1"
-ThisBuild / organization := "io.github.mercurievv.aidclimbing"
 ThisBuild / licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
 ThisBuild / startYear := Some(2026)
 ThisBuild / scalaVersion := "2.13.18"
@@ -24,7 +23,7 @@ val log4catsVersion = "2.6.0"
 
 inThisBuild(
   List(
-    scalaVersion      := "2.13.18",
+//    scalaVersion      := "2.13.18",
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
     scalacOptions     += "-Wunused:imports",
@@ -32,8 +31,9 @@ inThisBuild(
 )
 
 lazy val commonSettings = Seq(
-  headerLicense        := Some(HeaderLicense.ALv2("2026", "Viktors Kalinins")),
+  organization := "io.github.mercurievv.aidclimbing",
   pgpPassphrase        := sys.env.get("GPG_PASSPHRASE").map(_.toArray),
+  headerLicense        := Some(HeaderLicense.ALv2("2026", "Viktors Kalinins")),
   scalacOptions        += "-Wunused:imports",
   semanticdbEnabled    := true,
   semanticdbVersion    := scalafixSemanticdb.revision,
@@ -118,10 +118,10 @@ lazy val docs = project
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(all)
   .settings(
-    scalaVersion := "2.13.18",
-    crossScalaVersions := Seq("2.13.18"),
+//    scalaVersion := "2.13.18",
+//    crossScalaVersions := Seq("2.13.18"),
     tlSiteIsTypelevelProject := Some(TypelevelProject.Affiliate),
-    libraryDependencies += "org.typelevel" %% "log4cats-noop" % log4catsVersion,
+//    libraryDependencies += "org.typelevel" %% "log4cats-noop" % log4catsVersion,
     mdocVariables := Map(
       "AIDCLIMBING_VERSION" -> version.value,
     ),
