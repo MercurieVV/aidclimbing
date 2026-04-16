@@ -1,11 +1,11 @@
-ThisBuild / organization := "io.github.mercurievv.aidclimbing"
+ThisBuild / organization         := "io.github.mercurievv.aidclimbing"
 ThisBuild / organizationHomepage := Some(url("https://github.com/MercurieVV/"))
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/MercurieVV/aidclimbing"),
     "scm:git@github.com:MercurieVV/aidclimbing.git",
-  )
+  ),
 )
 
 ThisBuild / developers := List(
@@ -14,7 +14,7 @@ ThisBuild / developers := List(
     name  = "Viktors Kalinins",
     email = "mercureivv@gmail.com",
     url   = url("https://github.com/MercurieVV/"),
-  )
+  ),
 )
 
 //ThisBuild / description := "Describe your project here..."
