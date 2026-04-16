@@ -18,13 +18,15 @@ package io.github.mercurievv.aidclimbing.checkpoint.ce
 
 import cats.{Monad, Show}
 import cats.mtl.Tell
-import cats.syntax.all._
+import cats.syntax.all.*
 import io.github.mercurievv.aidclimbing.checkpoint.{Checkpoint, Memoize}
+
+import scala.reflect.ClassTag
 
 /** Checkpoint instance backed by an explicit Memoize[F, Repr]. */
 class CatsCheckpoint[F[_]: Monad, Repr](memoize: Memoize[F])(implicit tell: Tell[F, String]) extends Checkpoint[F] {
 
-  def checkpoint[A, K: Show, V: Show](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V]): F[V] =
+  def checkpoint[A, K: Show, V: Show: ClassTag](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V]): F[V] =
     fa.flatMap { a =>
       val key = Checkpoint.compositeKey(checkpointId, keyFn(a))
       memoize.get[String, V](key).flatMap {

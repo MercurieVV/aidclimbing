@@ -17,9 +17,11 @@
 package io.github.mercurievv.aidclimbing.checkpoint.ce
 
 import cats.data.WriterT
-import cats.syntax.all._
+import cats.syntax.all.*
 import cats.{Monad, Monoid, Show}
 import io.github.mercurievv.aidclimbing.checkpoint.{Checkpoint, Memoize}
+
+import scala.reflect.ClassTag
 
 /** Checkpoint instance for WriterT[F, W, *] that logs cache hits/misses.
  *
@@ -31,7 +33,7 @@ class WriterTCheckpoint[F[_]: Monad, W: Monoid](
   writeT: (Any, Boolean) => W
 ) extends Checkpoint[WriterT[F, W, *]] {
 
-  def checkpoint[A, K: Show, V: Show](
+  def checkpoint[A, K: Show, V: Show: ClassTag](
     checkpointId: String,
     fa: WriterT[F, W, A],
     keyFn: A => K,

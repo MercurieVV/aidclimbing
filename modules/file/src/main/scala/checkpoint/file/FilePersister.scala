@@ -44,7 +44,7 @@ class FilePersister[F[_]: Async, R](
       case false => none[V].pure[F]
       case true  =>
         readFile(p).flatMap { repr =>
-          Async[F].fromEither(fromRepr(repr))
+          Async[F].fromEither(fromRepr(repr).map(_.some))
         }
     }
   }

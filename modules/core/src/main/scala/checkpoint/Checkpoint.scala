@@ -17,10 +17,12 @@
 package io.github.mercurievv.aidclimbing.checkpoint
 
 import cats.{Monad, Show}
-import cats.syntax.all._
+import cats.syntax.all.*
+
+import scala.reflect.ClassTag
 
 trait Checkpoint[F[_]] {
-  def checkpoint[A, K: Show, V: Show](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V]): F[V]
+  def checkpoint[A, K: Show, V: Show: ClassTag](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V]): F[V]
 }
 
 object Checkpoint {
@@ -31,7 +33,7 @@ object Checkpoint {
 
   implicit def fromMonad[F[_]: Monad](implicit m: Memoize[F]): Checkpoint[F] =
     new Checkpoint[F] {
-      def checkpoint[A, K: Show, V: Show](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V]): F[V] =
+      def checkpoint[A, K: Show, V: Show: ClassTag](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V]): F[V] =
         fa.flatMap { a =>
           val key = compositeKey(checkpointId, keyFn(a))
           m.get[String, V](key).flatMap {

@@ -17,11 +17,13 @@
 package io.github.mercurievv.aidclimbing.checkpoint.syntax
 
 import cats.Show
-import io.github.mercurievv.aidclimbing.checkpoint.{Checkpoint}
+import io.github.mercurievv.aidclimbing.checkpoint.Checkpoint
+
+import scala.reflect.ClassTag
 
 trait CheckpointSyntax {
   implicit final class CheckpointOps[F[_], A](private val fa: F[A]) {
-    def checkpoint[K: Show, V: Show](checkpointId: String)(keyFn: A => K)(compute: A => F[V])(
+    def checkpoint[K: Show, V: Show: ClassTag](checkpointId: String)(keyFn: A => K)(compute: A => F[V])(
       implicit C: Checkpoint[F]): F[V] = C.checkpoint(checkpointId, fa, keyFn, compute)
   }
 }

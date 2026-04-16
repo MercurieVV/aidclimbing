@@ -121,7 +121,7 @@ lazy val docs = project
 //    scalaVersion := "2.13.18",
 //    crossScalaVersions := Seq("2.13.18"),
     tlSiteIsTypelevelProject := Some(TypelevelProject.Affiliate),
-//    libraryDependencies += "org.typelevel" %% "log4cats-noop" % log4catsVersion,
+    libraryDependencies += "org.typelevel" %% "log4cats-noop" % log4catsVersion,
     mdocVariables := Map(
       "AIDCLIMBING_VERSION" -> version.value,
     ),
