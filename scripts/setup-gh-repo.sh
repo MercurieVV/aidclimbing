@@ -285,11 +285,13 @@ set_branch_policy "main" "main"
 set_secret "PGP_PASSPHRASE"
 set_secret "PGP_SECRET"
 set_secret "SONATYPE_PASSWORD"
+set_secret "SONATYPE_USERNAME"
+set_secret "SONATYPE_CREDENTIAL_HOST"
 
-gh_variable_set "SONATYPE_USERNAME" "$repo_var_sonatype_username"
-echo "Set repo variable SONATYPE_USERNAME=${repo_var_sonatype_username}"
-gh_variable_set "SONATYPE_CREDENTIAL_HOST" "$repo_var_sonatype_credential_host"
-echo "Set repo variable SONATYPE_CREDENTIAL_HOST=${repo_var_sonatype_credential_host}"
+#gh_variable_set "SONATYPE_USERNAME" "$repo_var_sonatype_username"
+#echo "Set repo variable SONATYPE_USERNAME=${repo_var_sonatype_username}"
+#gh_variable_set "SONATYPE_CREDENTIAL_HOST" "$repo_var_sonatype_credential_host"
+#echo "Set repo variable SONATYPE_CREDENTIAL_HOST=${repo_var_sonatype_credential_host}"
 
 enable_dependency_graph
 ensure_gh_pages_branch
