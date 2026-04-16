@@ -1,5 +1,14 @@
-ThisBuild / version      := "0.1.0-SNAPSHOT"
+import scala.sys.process._
+
+ThisBuild / tlBaseVersion := "0.1"
+ThisBuild / organization := "io.github.mercurievv.aidclimbing"
+ThisBuild / licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
+ThisBuild / startYear := Some(2026)
 ThisBuild / scalaVersion := "2.13.18"
+ThisBuild / tlSitePublishBranch := Some("master")
+ThisBuild / tlCiReleaseBranches := Seq("master")
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
+ThisBuild / tlCiReleaseTags := false
 
 ThisBuild / libraryDependencies += compilerPlugin(
   "org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.full,
@@ -23,9 +32,11 @@ inThisBuild(
 )
 
 lazy val commonSettings = Seq(
+  pgpPassphrase        := sys.env.get("GPG_PASSPHRASE").map(_.toArray),
   scalacOptions        += "-Wunused:imports",
   semanticdbEnabled    := true,
   semanticdbVersion    := scalafixSemanticdb.revision,
+  publish / skip       := isAlreadyPublished.value,
   wartremoverWarnings ++= Seq(
     Wart.Var,
     Wart.MutableDataStructures,
@@ -39,15 +50,22 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  .aggregate(core, ce, filePersister, all)
+  .aggregate(core, ce, filePersister, all, docs)
   .settings(
     name    := "aidclimbing",
+    publish := {},
+    publishLocal := {},
+    publish / skip := true,
+    publishArtifact := false,
+    publishTo := None,
     prePush := Def
       .sequential(
         clean,
         scalafmtAll,
         scalafixAll.toTask(""),
         Test / test,
+        (docs / mdoc).toTask(""),
+        githubWorkflowCheck,
       )
       .value,
   )
@@ -93,3 +111,34 @@ lazy val filePersister = (project in file("modules/file"))
       "co.fs2" %% "fs2-io" % fs2Version,
     ),
   )
+
+lazy val docs = project
+  .in(file("site"))
+  .enablePlugins(TypelevelSitePlugin)
+  .dependsOn(all)
+  .settings(
+    scalaVersion := "2.13.18",
+    crossScalaVersions := Seq("2.13.18"),
+    tlSiteIsTypelevelProject := Some(TypelevelProject.Affiliate),
+    libraryDependencies += "org.typelevel" %% "log4cats-noop" % log4catsVersion,
+    mdocVariables := Map(
+      "AIDCLIMBING_VERSION" -> version.value,
+    ),
+  )
+  .settings(NoPublishPlugin.projectSettings)
+
+lazy val isAlreadyPublished = Def.setting {
+  val org  = organization.value
+  val name = moduleName.value
+  val ver  = version.value
+  if (isSnapshot.value) false
+  else isPublished(org, name, ver)
+}
+
+def isPublished(organization: String, name: String, version: String): Boolean = {
+  val url = s"https://repo1.maven.org/maven2/${organization.replace('.', '/')}/$name/$version/$name-$version.pom"
+  try Seq("curl", "--head", "--fail", url).! == 0
+  catch {
+    case _: Throwable => false
+  }
+}
