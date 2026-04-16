@@ -16,13 +16,14 @@ class WriterTCheckpoint[F[_]: Monad, W: Monoid](
 ) extends Checkpoint[WriterT[F, W, *]] {
 
   def checkpoint[A, K: Show, V: Show](
+    checkpointId: String,
     fa: WriterT[F, W, A],
     keyFn: A => K,
     compute: A => WriterT[F, W, V]
   ): WriterT[F, W, V] =
     fa.flatMap { a =>
-      val key = keyFn(a)
-      WriterT.liftF[F, W, Option[V]](memoize.get[K, V](key)).flatMap {
+      val key = Checkpoint.compositeKey(checkpointId, keyFn(a))
+      WriterT.liftF[F, W, Option[V]](memoize.get[String, V](key)).flatMap {
         case Some(cached) =>
           WriterT.tell[F, W](writeT(key, true)).as(cached)
         case None =>

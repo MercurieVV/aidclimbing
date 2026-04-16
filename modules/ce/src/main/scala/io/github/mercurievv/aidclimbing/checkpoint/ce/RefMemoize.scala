@@ -30,6 +30,12 @@ class RefMemoize[F[_]: Sync] private (ref: Ref[F, Map[String, Any]])
 
   def put[K: Show, V](key: K, value: V): F[Unit] =
     ref.update(_ + (key.show -> toRepr(value)))
+
+  def delete[K: Show](key: K): F[Unit] =
+    ref.update(_ - key.show)
+
+  def deleteAll(keyPrefix: String): F[Unit] =
+    ref.update(_.filterKeys(!_.startsWith(keyPrefix)).toMap)
 }
 
 object RefMemoize {

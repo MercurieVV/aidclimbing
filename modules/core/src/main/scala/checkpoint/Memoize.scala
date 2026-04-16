@@ -15,4 +15,6 @@ trait Memoize[F[_]] {
   def fromRepr[V](repr: Repr): Either[Throwable, V]
   def get[K: Show, V](key: K): F[Option[V]]
   def put[K: Show, V](key: K, value: V): F[Unit]
+  def delete[K: Show](key: K): F[Unit]
+  def deleteAll(keyPrefix: String): F[Unit]
 }

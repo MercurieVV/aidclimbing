@@ -36,6 +36,16 @@ class FilePersister[F[_]: Async, R](
     Files[F].createDirectories(dir) >> writeFile(p, toRepr(value))
   }
 
+  override def delete[K: Show](key: K): F[Unit] =
+    Files[F].deleteIfExists(dir / key.show).void
+
+  override def deleteAll(keyPrefix: String): F[Unit] =
+    Files[F].list(dir)
+      .filter(_.fileName.toString.startsWith(keyPrefix))
+      .evalMap(Files[F].deleteIfExists(_).void)
+      .compile
+      .drain
+
   override def toRepr[V](v: V): R = ???
 
   override def fromRepr[V](repr: R): Either[Throwable, V] = ???
