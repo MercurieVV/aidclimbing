@@ -147,9 +147,9 @@ jobs:
 
       - name: Publish
         env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_USERNAME: ${{ vars.SONATYPE_USERNAME }}
+          SONATYPE_CREDENTIAL_HOST: ${{ vars.SONATYPE_CREDENTIAL_HOST }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          SONATYPE_CREDENTIAL_HOST: ${{ secrets.SONATYPE_CREDENTIAL_HOST }}
         run: sbt tlCiRelease
 
   dependency-submission:
