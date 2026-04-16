@@ -85,7 +85,8 @@ repo=""
 op_item=""
 op_gpg_item=""
 op_sonatype_item=""
-repo_var_sonatype_username="${REPO_VAR_SONATYPE_USERNAME:-TSwfhAIy}"
+repo_var_sonatype_username="${REPO_VAR_SONATYPE_USERNAME:-RDrGyO}"
+repo_var_sonatype_credential_host="${REPO_VAR_SONATYPE_CREDENTIAL_HOST:-central.sonatype.com}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -283,12 +284,12 @@ set_branch_policy "main" "main"
 
 set_secret "PGP_PASSPHRASE"
 set_secret "PGP_SECRET"
-set_secret "SONATYPE_CREDENTIAL_HOST"
 set_secret "SONATYPE_PASSWORD"
-set_secret "SONATYPE_USERNAME"
 
 gh_variable_set "SONATYPE_USERNAME" "$repo_var_sonatype_username"
 echo "Set repo variable SONATYPE_USERNAME=${repo_var_sonatype_username}"
+gh_variable_set "SONATYPE_CREDENTIAL_HOST" "$repo_var_sonatype_credential_host"
+echo "Set repo variable SONATYPE_CREDENTIAL_HOST=${repo_var_sonatype_credential_host}"
 
 enable_dependency_graph
 ensure_gh_pages_branch
