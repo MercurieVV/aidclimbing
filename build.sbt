@@ -8,6 +8,7 @@ ThisBuild / tlSitePublishBranch        := Some("master")
 ThisBuild / tlCiReleaseBranches        := Seq("master")
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
 ThisBuild / tlCiReleaseTags            := false
+ThisBuild / isSnapshot                 := false
 
 ThisBuild / libraryDependencies += compilerPlugin(
   "org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.full,
