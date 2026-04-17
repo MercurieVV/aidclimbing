@@ -1,14 +1,12 @@
 import scala.sys.process._
 
-ThisBuild / tlBaseVersion              := "0.1"
+ThisBuild / tlBaseVersion              := "0.0"
 ThisBuild / licenses                   += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
 ThisBuild / startYear                  := Some(2026)
 ThisBuild / scalaVersion               := "2.13.18"
 ThisBuild / tlSitePublishBranch        := Some("master")
-ThisBuild / tlCiReleaseBranches        := Seq("master")
+ThisBuild / tlCiReleaseBranches        := Seq.empty
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
-ThisBuild / tlCiReleaseTags            := false
-ThisBuild / isSnapshot                 := false
 
 ThisBuild / libraryDependencies += compilerPlugin(
   "org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.full,
