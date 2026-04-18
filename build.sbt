@@ -1,16 +1,26 @@
 import scala.sys.process._
 
+val scala213 = "2.13.18"
+val scala3 = "3.3.5"
+
 ThisBuild / tlBaseVersion              := "0.2"
 ThisBuild / licenses                   += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
 ThisBuild / startYear                  := Some(2026)
-ThisBuild / scalaVersion               := "2.13.18"
+ThisBuild / scalaVersion               := scala213
+ThisBuild / crossScalaVersions         := Seq(scala213, scala3)
 ThisBuild / tlSitePublishBranch        := Some("master")
 ThisBuild / tlCiReleaseBranches        := Seq.empty
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
 
-ThisBuild / libraryDependencies += compilerPlugin(
-  "org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.full,
-)
+ThisBuild / libraryDependencies ++= {
+  if (scalaBinaryVersion.value == "2.13") {
+    Seq(
+      compilerPlugin(
+        "org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.full,
+      ),
+    )
+  } else Nil
+}
 ThisBuild / scalafixDependencies += "org.typelevel" %% "typelevel-scalafix" % "0.5.0"
 
 lazy val prePush = taskKey[Unit]("Run all checks: format, fix, clean compile, test")
@@ -36,20 +46,24 @@ lazy val commonSettings = Seq(
   semanticdbEnabled    := true,
   semanticdbVersion    := scalafixSemanticdb.revision,
   publish / skip       := isAlreadyPublished.value,
-  wartremoverWarnings ++= Seq(
-    Wart.Var,
-    Wart.MutableDataStructures,
-    Wart.NonUnitStatements,
-    Wart.Throw,
-    Wart.Return,
-    Wart.AsInstanceOf,
-    Wart.IsInstanceOf,
-    Wart.Null,
-  ),
+  wartremoverWarnings ++= {
+    if (scalaBinaryVersion.value == "2.13") {
+      Seq(
+        Wart.Var,
+        Wart.MutableDataStructures,
+        Wart.NonUnitStatements,
+        Wart.Throw,
+        Wart.Return,
+        Wart.AsInstanceOf,
+        Wart.IsInstanceOf,
+        Wart.Null,
+      )
+    } else Nil
+  },
 )
 
 lazy val root = (project in file("."))
-  .aggregate(core, ce, filePersister, all, docs)
+  .aggregate(core, ce, filePersister, all)
   .settings(
     name            := "aidclimbing",
     publish         := {},
@@ -116,8 +130,8 @@ lazy val docs = project
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(all)
   .settings(
-//    scalaVersion := "2.13.18",
-//    crossScalaVersions := Seq("2.13.18"),
+    scalaVersion := scala213,
+    crossScalaVersions := Seq(scala213),
     tlSiteIsTypelevelProject := Some(TypelevelProject.Affiliate),
     libraryDependencies      += "org.typelevel" %% "log4cats-noop" % log4catsVersion,
     mdocVariables            := Map(
@@ -128,14 +142,17 @@ lazy val docs = project
 
 lazy val isAlreadyPublished = Def.setting {
   val org = organization.value
-  val name = moduleName.value
+  val artifactId =
+    if (crossPaths.value) s"${moduleName.value}_${scalaBinaryVersion.value}"
+    else moduleName.value
   val ver = version.value
   if (isSnapshot.value) false
-  else isPublished(org, name, ver)
+  else isPublished(org, artifactId, ver)
 }
 
-def isPublished(organization: String, name: String, version: String): Boolean = {
-  val url = s"https://repo1.maven.org/maven2/${organization.replace('.', '/')}/$name/$version/$name-$version.pom"
+def isPublished(organization: String, artifactId: String, version: String): Boolean = {
+  val url =
+    s"https://repo1.maven.org/maven2/${organization.replace('.', '/')}/$artifactId/$version/$artifactId-$version.pom"
   try Seq("curl", "--head", "--fail", url).! == 0
   catch {
     case _: Throwable => false

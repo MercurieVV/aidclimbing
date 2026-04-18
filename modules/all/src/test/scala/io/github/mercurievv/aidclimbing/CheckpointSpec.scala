@@ -32,7 +32,7 @@ class CheckpointSpec extends CatsEffectSuite {
     RefMemoize.make[IO].flatMap { memoize =>
       implicit val logger: Logger[IO] = NoOpLogger[IO]
       implicit val teller: Tell[IO, String] = LogTell[IO]
-      implicit val cp = CatsCheckpoint(memoize)
+      implicit val cp: Checkpoint[IO] = CatsCheckpoint(memoize)
 
       // The expensive computation we want to protect
       for {
@@ -70,7 +70,7 @@ class CheckpointSpec extends CatsEffectSuite {
     RefMemoize.make[IO].flatMap { memoize =>
       implicit val logger: Logger[IO] = NoOpLogger[IO]
       implicit val teller: Tell[IO, String] = LogTell[IO]
-      implicit val cp = CatsCheckpoint(memoize)
+      implicit val cp: Checkpoint[IO] = CatsCheckpoint(memoize)
 
       for {
         step1Calls <- Ref.of[IO, Int](0)
