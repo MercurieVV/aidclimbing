@@ -66,6 +66,16 @@ require_cmd() {
 
 require_cmd gh
 require_cmd git
+require_cmd curl
+
+latest_published_version() {
+  local metadata_url="https://repo1.maven.org/maven2/io/github/mercurievv/aidclimbing/checkpoint-all_2.13/maven-metadata.xml"
+  local metadata
+
+  metadata="$(curl --silent --show-error --fail --location "$metadata_url")" || return 1
+
+  printf '%s\n' "$metadata" | tr -d '\n' | sed -n 's:.*<release>\([^<]*\)</release>.*:\1:p'
+}
 
 if [[ -z "$branch_name" ]]; then
   branch_name="$(git branch --show-current)"
@@ -95,9 +105,22 @@ gh_run_watch() {
   fi
 }
 
+gh_run_view() {
+  local run_id="$1"
+  shift
+
+  if [[ -n "$repo" ]]; then
+    gh run view --repo "$repo" "$run_id" "$@"
+  else
+    gh run view "$run_id" "$@"
+  fi
+}
+
 watch_workflow() {
   local wf_name="$1"
   local run_id
+  local status
+  local conclusion
 
   run_id="$(
     gh_run_list \
@@ -114,6 +137,19 @@ watch_workflow() {
     return 1
   fi
 
+  status="$(gh_run_view "$run_id" --json status --jq '.status')"
+  conclusion="$(gh_run_view "$run_id" --json conclusion --jq '.conclusion')"
+
+  if [[ "$status" == "completed" ]]; then
+    if [[ "$conclusion" == "success" ]]; then
+      echo "Workflow '$wf_name' run $run_id on branch '$branch_name' has already completed with 'success'."
+      return 0
+    fi
+
+    echo "Workflow '$wf_name' run $run_id on branch '$branch_name' has already completed with '${conclusion}'." >&2
+    return 1
+  fi
+
   echo "Watching workflow '$wf_name' run $run_id on branch '$branch_name'..."
   gh_run_watch "$run_id" --exit-status
 }
@@ -123,4 +159,13 @@ if [[ "$check_all" == "true" ]]; then
   watch_workflow "Continuous Integration"
 else
   watch_workflow "$workflow_name"
+fi
+
+last_version="$(latest_published_version)" || {
+  echo "Could not determine latest published version from Maven Central." >&2
+  exit 1
+}
+
+if [[ -n "$last_version" ]]; then
+  echo "Last published version: ${last_version}"
 fi

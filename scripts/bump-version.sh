@@ -11,7 +11,7 @@ Creates the next annotated semver tag in the form vX.Y.Z.
 
 Rules:
 - Uses the highest existing v* semver tag if present.
-- If no v* semver tag exists, falls back to ThisBuild / tlBaseVersion from build.sbt.
+- If no v* semver tag exists, creates ThisBuild / tlBaseVersion from build.sbt as the first release tag.
 - Creates the tag locally.
 - With --push, also pushes the new tag to origin.
 EOF
@@ -124,10 +124,11 @@ require_clean_git
 
 current_version="$(latest_git_tag_version)"
 if [[ -z "$current_version" ]]; then
-  current_version="$(base_version_from_build)"
+  new_version="$(base_version_from_build)"
+else
+  new_version="$(next_version "$current_version" "$bump_type")"
 fi
 
-new_version="$(next_version "$current_version" "$bump_type")"
 new_tag="v${new_version}"
 
 if git rev-parse -q --verify "refs/tags/${new_tag}" >/dev/null; then

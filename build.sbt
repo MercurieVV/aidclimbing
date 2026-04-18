@@ -1,6 +1,6 @@
 import scala.sys.process._
 
-ThisBuild / tlBaseVersion              := "0.0"
+ThisBuild / tlBaseVersion              := "0.2"
 ThisBuild / licenses                   += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
 ThisBuild / startYear                  := Some(2026)
 ThisBuild / scalaVersion               := "2.13.18"
