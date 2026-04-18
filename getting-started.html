@@ -118,9 +118,9 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">log4cats</span><span>.</span><span class="identifier">noop</span><span>.</span><span class="type-name">NoOpLogger</span><span>
 
 </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">logger</span><span>: </span><span class="type-name">Logger</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">NoOpLogger</span><span>[</span><span class="type-name">IO</span><span>]
-</span><span class="comment">// logger: Logger[IO] = org.typelevel.log4cats.noop.NoOpLogger$$anon$1@2335652e
+</span><span class="comment">// logger: Logger[IO] = org.typelevel.log4cats.noop.NoOpLogger$$anon$1@25f54758
 </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">teller</span><span>: </span><span class="type-name">Tell</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">String</span><span>] = </span><span class="type-name">LogTell</span><span>[</span><span class="type-name">IO</span><span>]
-</span><span class="comment">// teller: Tell[IO, String] = io.github.mercurievv.aidclimbing.checkpoint.ce.LogTell$$anon$1@7ac6f28f</span></code></pre>
+</span><span class="comment">// teller: Tell[IO, String] = io.github.mercurievv.aidclimbing.checkpoint.ce.LogTell$$anon$1@20f8e918</span></code></pre>
         <p>Create an in-memory memoization backend:</p>
         <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">program</span><span> = </span><span class="type-name">RefMemoize</span><span>.</span><span class="identifier">make</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">memoize</span><span> =&gt;
   </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">cp</span><span>: </span><span class="type-name">Checkpoint</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">CatsCheckpoint</span><span>(</span><span class="identifier">memoize</span><span>)
@@ -136,10 +136,10 @@
 </span><span class="comment">// program: IO[(Int, Int, Int)] = FlatMap(
 //   ioe = Map(
 //     ioe = Delay(
-//       thunk = cats.effect.kernel.Ref$MakeLowPriorityInstances$$anon$2$$Lambda$13936/0x0000000103a3f840@7f1205c6,
+//       thunk = cats.effect.kernel.Ref$MakeLowPriorityInstances$$anon$2$$Lambda$12646/0x000000010369cc40@4dbc69f6,
 //       event = cats.effect.tracing.TracingEvent$StackTrace
 //     ),
-//     f = io.github.mercurievv.aidclimbing.checkpoint.ce.RefMemoize$$$Lambda$13937/0x0000000103a3f040@2c590d1d,
+//     f = io.github.mercurievv.aidclimbing.checkpoint.ce.RefMemoize$$$Lambda$12647/0x000000010369b040@7e009105,
 //     event = cats.effect.tracing.TracingEvent$StackTrace
 //   ),
 //   f = &lt;function1&gt;,
@@ -163,10 +163,10 @@
 </span><span class="comment">// pipeline: IO[String] = FlatMap(
 //   ioe = Map(
 //     ioe = Delay(
-//       thunk = cats.effect.kernel.Ref$MakeLowPriorityInstances$$anon$2$$Lambda$13936/0x0000000103a3f840@76534024,
+//       thunk = cats.effect.kernel.Ref$MakeLowPriorityInstances$$anon$2$$Lambda$12646/0x000000010369cc40@1baa09d1,
 //       event = cats.effect.tracing.TracingEvent$StackTrace
 //     ),
-//     f = io.github.mercurievv.aidclimbing.checkpoint.ce.RefMemoize$$$Lambda$13937/0x0000000103a3f040@43f22a30,
+//     f = io.github.mercurievv.aidclimbing.checkpoint.ce.RefMemoize$$$Lambda$12647/0x000000010369b040@4ccca1b4,
 //     event = cats.effect.tracing.TracingEvent$StackTrace
 //   ),
 //   f = &lt;function1&gt;,
