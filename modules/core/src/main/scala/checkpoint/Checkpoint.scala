@@ -16,6 +16,7 @@
 
 package io.github.mercurievv.aidclimbing.checkpoint
 
+import cats.mtl.Tell
 import cats.{Monad, Show}
 import cats.syntax.all.*
 
@@ -31,7 +32,7 @@ object Checkpoint {
   def compositeKey[K: Show](checkpointId: String, key: K): String =
     s"$checkpointId::${key.show}"
 
-  implicit def fromMonad[F[_]: Monad](implicit m: Memoize[F]): Checkpoint[F] =
+  implicit def fromMonad[F[_]: Monad](implicit m: Memoize[F], tell: Tell[F, String]): Checkpoint[F] =
     new Checkpoint[F] {
       def checkpoint[A, K: Show, V: Show: ClassTag](checkpointId: String, fa: F[A], keyFn: A => K, compute: A => F[V])
         : F[V] =
@@ -41,6 +42,6 @@ object Checkpoint {
             case Some(cached) => cached.pure[F]
             case None         => compute(a).flatTap(v => m.put(key, v))
           }
-        }
+        }.flatTap(v => tell.tell(v.show))
     }
 }

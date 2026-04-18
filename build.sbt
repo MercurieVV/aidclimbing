@@ -86,6 +86,7 @@ lazy val core = (project in file("modules/core"))
     name                 := "checkpoint-core",
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % catsVersion,
+      "org.typelevel" %% "cats-mtl"  % "1.3.0",
     ),
   )
 
@@ -96,7 +97,6 @@ lazy val ce = (project in file("modules/ce"))
     name                 := "checkpoint-ce",
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-effect"   % catsEffectVersion,
-      "org.typelevel" %% "cats-mtl"      % "1.3.0",
       "org.typelevel" %% "log4cats-core" % log4catsVersion,
     ),
   )
