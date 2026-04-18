@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+sbt --batch githubWorkflowCheck
+sbt --batch "++2.13.18" headerCheckAll scalafmtCheckAll "scalafmtSbtCheck" test mimaReportBinaryIssues doc
+sbt --batch "++3.3.7" headerCheckAll scalafmtCheckAll "scalafmtSbtCheck" test mimaReportBinaryIssues doc
+sbt --batch docs/tlSite

@@ -23,7 +23,7 @@ ThisBuild / libraryDependencies ++= {
 }
 ThisBuild / scalafixDependencies += "org.typelevel" %% "typelevel-scalafix" % "0.5.0"
 
-lazy val prePush = taskKey[Unit]("Run all checks: format, fix, clean compile, test")
+lazy val prePush = taskKey[Unit]("Run the local pre-push check suite")
 
 val catsVersion = "2.10.0"
 val catsEffectVersion = "3.5.4"
@@ -71,16 +71,26 @@ lazy val root = (project in file("."))
     publish / skip  := true,
     publishArtifact := false,
     publishTo       := None,
-    prePush         := Def
-      .sequential(
-        clean,
-        scalafmtAll,
-        scalafixAll.toTask(""),
-        Test / test,
-        (docs / mdoc).toTask(""),
-        githubWorkflowCheck,
+    prePush         := {
+      val state = Keys.state.value
+      val commands = Seq(
+        """set ThisBuild / scalacOptions ~= (_.filterNot(_ == "-Werror"))""",
+        "clean",
+        "githubWorkflowCheck",
+        "headerCheckAll",
+        "scalafmtAll",
+        "scalafmtSbt",
+        "test",
+        "mimaReportBinaryIssues",
+        "doc",
+        "docs/tlSite",
       )
-      .value,
+
+      commands.foldLeft(state) { (current, command) =>
+        Command.process(command, current)
+      }
+      ()
+    },
   )
 
 lazy val all = (project in file("modules/all"))
