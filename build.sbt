@@ -130,8 +130,8 @@ lazy val docs = project
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(all)
   .settings(
-    scalaVersion := scala213,
-    crossScalaVersions := Seq(scala213),
+    scalaVersion             := scala213,
+    crossScalaVersions       := Seq(scala213),
     tlSiteIsTypelevelProject := Some(TypelevelProject.Affiliate),
     libraryDependencies      += "org.typelevel" %% "log4cats-noop" % log4catsVersion,
     mdocVariables            := Map(
