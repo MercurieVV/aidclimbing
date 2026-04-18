@@ -40,12 +40,16 @@ inThisBuild(
 )
 
 lazy val commonSettings = Seq(
-  organization         := "io.github.mercurievv.aidclimbing",
-  pgpPassphrase        := sys.env.get("GPG_PASSPHRASE").map(_.toArray),
-  headerLicense        := Some(HeaderLicense.ALv2("2026", "Viktors Kalinins")),
-  semanticdbEnabled    := true,
-  semanticdbVersion    := scalafixSemanticdb.revision,
-  publish / skip       := isAlreadyPublished.value,
+  organization          := "io.github.mercurievv.aidclimbing",
+  pgpPassphrase         := sys.env.get("GPG_PASSPHRASE").map(_.toArray),
+  headerLicense         := Some(HeaderLicense.ALv2("2026", "Viktors Kalinins")),
+  semanticdbEnabled     := true,
+  semanticdbVersion     := scalafixSemanticdb.revision,
+  publish / skip        := isAlreadyPublished.value,
+  mimaPreviousArtifacts := {
+    if (scalaBinaryVersion.value == "3") Set.empty
+    else Set(organization.value %% moduleName.value % "0.2.0")
+  },
   wartremoverWarnings ++= {
     if (scalaBinaryVersion.value == "2.13") {
       Seq(
