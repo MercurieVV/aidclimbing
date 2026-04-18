@@ -1,7 +1,7 @@
 import scala.sys.process._
 
 val scala213 = "2.13.18"
-val scala3 = "3.3.5"
+val scala3 = "3.3.7"
 
 ThisBuild / tlBaseVersion              := "0.2"
 ThisBuild / licenses                   += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
@@ -63,7 +63,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  .aggregate(core, ce, filePersister, all)
+  .aggregate(core, ce, filePersister, all, docs)
   .settings(
     name            := "aidclimbing",
     publish         := {},
@@ -130,8 +130,6 @@ lazy val docs = project
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(all)
   .settings(
-    scalaVersion             := scala213,
-    crossScalaVersions       := Seq(scala213),
     tlSiteIsTypelevelProject := Some(TypelevelProject.Affiliate),
     libraryDependencies      += "org.typelevel" %% "log4cats-noop" % log4catsVersion,
     mdocVariables            := Map(
