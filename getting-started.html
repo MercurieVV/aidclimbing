@@ -86,7 +86,7 @@
 
   <ul class="nav-list">
     <li class="level1 active nav-leaf"><a href="#">Getting Started</a></li>
-    <li class="level1 nav-leaf"><a href="index.html">Aidclimbing</a></li>
+    <li class="level1 nav-leaf"><a href="index.html">aidclimbing</a></li>
   </ul>
 
 </nav>
@@ -98,6 +98,11 @@
   <p class="header"><a href="#">Getting Started</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#sbt-project">SBT project</a></li>
+    <li class="level1 nav-leaf"><a href="#scala-cli">scala-cli</a></li>
+    <li class="level1 nav-leaf"><a href="#basic-example">Basic example</a></li>
+    <li class="level1 nav-leaf"><a href="#multi-stage-pipeline">Multi-stage pipeline</a></li>
+    <li class="level1 nav-leaf"><a href="#ai-agent-pipeline">AI agent pipeline</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -107,66 +112,82 @@
       <main class="content">
 
         <h1 id="getting-started" class="title">Getting Started</h1>
-        <p>This example uses the aggregated module and demonstrates that repeated computations are cached behind a checkpoint key.</p>
+        
+        <h2 id="sbt-project" class="section"><a class="anchor-link left" href="#sbt-project"><i class="icofont-laika link">&#xef71;</i></a>SBT project</h2>
+        <p>Add the dependency:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.mercurievv.aidclimbing&quot;</span><span> %% </span><span class="string-literal">&quot;checkpoint-all&quot;</span><span> % </span><span class="string-literal">&quot;0.3.0-1-aaebdda-SNAPSHOT&quot;</span></code></pre>
+        
+        <h2 id="scala-cli" class="section"><a class="anchor-link left" href="#scala-cli"><i class="icofont-laika link">&#xef71;</i></a>scala-cli</h2>
+        <p>For scripts and one-off research, add directives at the top of your <code>.sc</code> file:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;io.github.mercurievv.aidclimbing::checkpoint-all:0.3.0-1-aaebdda-SNAPSHOT&quot;
+//&gt; using dep &quot;org.typelevel::log4cats-noop:2.6.0&quot;</span></code></pre>
+        <p>Run with:</p>
+        <pre><code>scala-cli pipeline.sc</code></pre>
+        
+        <h2 id="basic-example" class="section"><a class="anchor-link left" href="#basic-example"><i class="icofont-laika link">&#xef71;</i></a>Basic example</h2>
+        <p><code>FileMemoize</code> persists checkpoint results to a directory. Same input key → cached result; <code>compute</code> is skipped.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">Ref</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">unsafe</span><span>.</span><span class="identifier">implicits</span><span>.</span><span class="identifier">global</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Tell</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">fs2</span><span>.</span><span class="identifier">io</span><span>.</span><span class="identifier">file</span><span>.</span><span class="type-name">Path</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">mercurievv</span><span>.</span><span class="identifier">aidclimbing</span><span>.</span><span class="identifier">checkpointall</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">mercurievv</span><span>.</span><span class="identifier">aidclimbing</span><span>.</span><span class="identifier">checkpoint</span><span>.</span><span class="identifier">ce</span><span>.</span><span class="type-name">LogTell</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">mercurievv</span><span>.</span><span class="identifier">aidclimbing</span><span>.</span><span class="identifier">checkpoint</span><span>.</span><span class="type-name">Checkpoint</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">mercurievv</span><span>.</span><span class="identifier">aidclimbing</span><span>.</span><span class="identifier">checkpoint</span><span>.</span><span class="identifier">ce</span><span>.</span><span class="type-name">LogTell</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">mercurievv</span><span>.</span><span class="identifier">aidclimbing</span><span>.</span><span class="identifier">checkpoint</span><span>.</span><span class="identifier">file</span><span>.</span><span class="type-name">FileMemoize</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">log4cats</span><span>.</span><span class="type-name">Logger</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">log4cats</span><span>.</span><span class="identifier">noop</span><span>.</span><span class="type-name">NoOpLogger</span><span>
 
 </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">logger</span><span>: </span><span class="type-name">Logger</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">NoOpLogger</span><span>[</span><span class="type-name">IO</span><span>]
-</span><span class="comment">// logger: Logger[IO] = org.typelevel.log4cats.noop.NoOpLogger$$anon$1@18c3c02f
+</span><span class="comment">// logger: Logger[IO] = org.typelevel.log4cats.noop.NoOpLogger$$anon$1@7bd44b7f
 </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">teller</span><span>: </span><span class="type-name">Tell</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">String</span><span>] = </span><span class="type-name">LogTell</span><span>[</span><span class="type-name">IO</span><span>]
-</span><span class="comment">// teller: Tell[IO, String] = io.github.mercurievv.aidclimbing.checkpoint.ce.LogTell$$anon$1@5a57990b</span></code></pre>
-        <p>Create an in-memory memoization backend:</p>
-        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">program</span><span> = </span><span class="type-name">RefMemoize</span><span>.</span><span class="identifier">make</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">memoize</span><span> =&gt;
+</span><span class="comment">// teller: Tell[IO, String] = io.github.mercurievv.aidclimbing.checkpoint.ce.LogTell$$anon$1@49023507</span></code></pre>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">cacheDir</span><span> = </span><span class="type-name">Path</span><span>(</span><span class="identifier">java</span><span>.</span><span class="identifier">nio</span><span>.</span><span class="identifier">file</span><span>.</span><span class="type-name">Files</span><span>.</span><span class="identifier">createTempDirectory</span><span>(</span><span class="string-literal">&quot;aidclimbing-&quot;</span><span>).</span><span class="identifier">toString</span><span>)
+</span><span class="comment">// cacheDir: Path = /tmp/aidclimbing-10742152368089344705
+</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">program</span><span> = {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">memoize</span><span> = </span><span class="type-name">FileMemoize</span><span>.</span><span class="identifier">string</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">cacheDir</span><span>)
   </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">cp</span><span>: </span><span class="type-name">Checkpoint</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">CatsCheckpoint</span><span>(</span><span class="identifier">memoize</span><span>)
 
   </span><span class="keyword">for</span><span> {
     </span><span class="identifier">callCount</span><span> &lt;- </span><span class="type-name">Ref</span><span>.</span><span class="identifier">of</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Int</span><span>](</span><span class="number-literal">0</span><span>)
-    </span><span class="identifier">expensive</span><span> = (</span><span class="identifier">s</span><span>: </span><span class="type-name">String</span><span>) =&gt; </span><span class="identifier">callCount</span><span>.</span><span class="identifier">update</span><span>(</span><span class="identifier">_</span><span> + </span><span class="number-literal">1</span><span>) *&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="identifier">s</span><span>.</span><span class="identifier">length</span><span>)
-    </span><span class="identifier">first</span><span> &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;step1&quot;</span><span>, </span><span class="type-name">IO</span><span>(</span><span class="string-literal">&quot;hello&quot;</span><span>), </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>], </span><span class="identifier">expensive</span><span>)
-    </span><span class="identifier">second</span><span> &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;step1&quot;</span><span>, </span><span class="type-name">IO</span><span>(</span><span class="string-literal">&quot;hello&quot;</span><span>), </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>], </span><span class="identifier">expensive</span><span>)
-    </span><span class="identifier">count</span><span> &lt;- </span><span class="identifier">callCount</span><span>.</span><span class="identifier">get</span><span>
+    </span><span class="identifier">expensive</span><span>  = (</span><span class="identifier">s</span><span>: </span><span class="type-name">String</span><span>) =&gt; </span><span class="identifier">callCount</span><span>.</span><span class="identifier">update</span><span>(</span><span class="identifier">_</span><span> + </span><span class="number-literal">1</span><span>) *&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="identifier">s</span><span>.</span><span class="identifier">length</span><span>)
+    </span><span class="identifier">first</span><span>     &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;step1&quot;</span><span>, </span><span class="type-name">IO</span><span>(</span><span class="string-literal">&quot;hello&quot;</span><span>), </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>], </span><span class="identifier">expensive</span><span>)
+    </span><span class="identifier">second</span><span>    &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;step1&quot;</span><span>, </span><span class="type-name">IO</span><span>(</span><span class="string-literal">&quot;hello&quot;</span><span>), </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>], </span><span class="identifier">expensive</span><span>)
+    </span><span class="identifier">count</span><span>     &lt;- </span><span class="identifier">callCount</span><span>.</span><span class="identifier">get</span><span>
   } </span><span class="keyword">yield</span><span> (</span><span class="identifier">first</span><span>, </span><span class="identifier">second</span><span>, </span><span class="identifier">count</span><span>)
 }
 </span><span class="comment">// program: IO[(Int, Int, Int)] = FlatMap(
-//   ioe = Map(
-//     ioe = Delay(
-//       thunk = cats.effect.kernel.Ref$MakeLowPriorityInstances$$anon$2$$Lambda$12761/0x00000001036dcc40@79bc5c6a,
-//       event = cats.effect.tracing.TracingEvent$StackTrace
-//     ),
-//     f = io.github.mercurievv.aidclimbing.checkpoint.ce.RefMemoize$$$Lambda$12762/0x00000001036db040@47bd9115,
+//   ioe = Delay(
+//     thunk = cats.effect.IO$$$Lambda$12800/0x00000001035bb840@24a9780f,
 //     event = cats.effect.tracing.TracingEvent$StackTrace
 //   ),
 //   f = &lt;function1&gt;,
 //   event = cats.effect.tracing.TracingEvent$StackTrace
 // )</span></code></pre>
-        <p>Run the program:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">program</span><span>.</span><span class="identifier">unsafeRunSync</span><span>()
 </span><span class="comment">// 5
 // 5
 // res0: (Int, Int, Int) = (5, 5, 1)</span></code></pre>
-        <p>You can also compose multiple checkpointed stages in a pipeline:</p>
-        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">pipeline</span><span> = </span><span class="type-name">RefMemoize</span><span>.</span><span class="identifier">make</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">memoize</span><span> =&gt;
+        
+        <h2 id="multi-stage-pipeline" class="section"><a class="anchor-link left" href="#multi-stage-pipeline"><i class="icofont-laika link">&#xef71;</i></a>Multi-stage pipeline</h2>
+        <p>Only stages whose input key changes re-execute:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">pipeline</span><span> = {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">memoize</span><span> = </span><span class="type-name">FileMemoize</span><span>.</span><span class="identifier">string</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">cacheDir</span><span>)
   </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">cp</span><span>: </span><span class="type-name">Checkpoint</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">CatsCheckpoint</span><span>(</span><span class="identifier">memoize</span><span>)
 
   </span><span class="keyword">for</span><span> {
-    </span><span class="identifier">trimmed</span><span> &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;trim&quot;</span><span>, </span><span class="type-name">IO</span><span>(</span><span class="string-literal">&quot; hello &quot;</span><span>), </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>], (</span><span class="identifier">s</span><span>: </span><span class="type-name">String</span><span>) =&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="identifier">s</span><span>.</span><span class="identifier">trim</span><span>))
-    </span><span class="identifier">length</span><span> &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;length&quot;</span><span>, </span><span class="type-name">IO</span><span>(</span><span class="identifier">trimmed</span><span>), </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>], (</span><span class="identifier">s</span><span>: </span><span class="type-name">String</span><span>) =&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="identifier">s</span><span>.</span><span class="identifier">length</span><span>))
-    </span><span class="identifier">rendered</span><span> &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;render&quot;</span><span>, </span><span class="type-name">IO</span><span>(</span><span class="identifier">length</span><span>), </span><span class="identifier">identity</span><span>[</span><span class="type-name">Int</span><span>], (</span><span class="identifier">n</span><span>: </span><span class="type-name">Int</span><span>) =&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="string-literal">s&quot;len=</span><span class="substitution">$n</span><span class="string-literal">&quot;</span><span>))
+    </span><span class="identifier">trimmed</span><span>  &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;trim&quot;</span><span>,   </span><span class="type-name">IO</span><span>(</span><span class="string-literal">&quot; hello &quot;</span><span>), </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>], (</span><span class="identifier">s</span><span>: </span><span class="type-name">String</span><span>) =&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="identifier">s</span><span>.</span><span class="identifier">trim</span><span>))
+    </span><span class="identifier">length</span><span>   &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;length&quot;</span><span>, </span><span class="type-name">IO</span><span>(</span><span class="identifier">trimmed</span><span>),   </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>], (</span><span class="identifier">s</span><span>: </span><span class="type-name">String</span><span>) =&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="identifier">s</span><span>.</span><span class="identifier">length</span><span>))
+    </span><span class="identifier">rendered</span><span> &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;render&quot;</span><span>, </span><span class="type-name">IO</span><span>(</span><span class="identifier">length</span><span>),    </span><span class="identifier">identity</span><span>[</span><span class="type-name">Int</span><span>],    (</span><span class="identifier">n</span><span>: </span><span class="type-name">Int</span><span>)    =&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="string-literal">s&quot;len=</span><span class="substitution">$n</span><span class="string-literal">&quot;</span><span>))
   } </span><span class="keyword">yield</span><span> </span><span class="identifier">rendered</span><span>
 }
 </span><span class="comment">// pipeline: IO[String] = FlatMap(
-//   ioe = Map(
+//   ioe = FlatMap(
 //     ioe = Delay(
-//       thunk = cats.effect.kernel.Ref$MakeLowPriorityInstances$$anon$2$$Lambda$12761/0x00000001036dcc40@4cd4e93f,
+//       thunk = &lt;function0&gt;,
 //       event = cats.effect.tracing.TracingEvent$StackTrace
 //     ),
-//     f = io.github.mercurievv.aidclimbing.checkpoint.ce.RefMemoize$$$Lambda$12762/0x00000001036db040@723a58d1,
+//     f = io.github.mercurievv.aidclimbing.checkpoint.ce.CatsCheckpoint$$Lambda$12876/0x0000000103614840@6e4586fb,
 //     event = cats.effect.tracing.TracingEvent$StackTrace
 //   ),
 //   f = &lt;function1&gt;,
@@ -178,6 +199,58 @@
 // 5
 // len=5
 // res1: String = &quot;len=5&quot;</span></code></pre>
+        
+        <h2 id="ai-agent-pipeline" class="section"><a class="anchor-link left" href="#ai-agent-pipeline"><i class="icofont-laika link">&#xef71;</i></a>AI agent pipeline</h2>
+        <p>LLM calls are slow and costly. Checkpoint each stage so that changing one stage only re-runs that stage.
+        Results survive restarts — you never pay twice for the same LLM call with the same input.</p>
+        <pre><code class="nohighlight"><span class="comment">// pipeline.sc
+//&gt; using dep &quot;io.github.mercurievv.aidclimbing::checkpoint-all:0.3.0-1-aaebdda-SNAPSHOT&quot;
+//&gt; using dep &quot;org.typelevel::log4cats-noop:2.6.0&quot;
+</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Tell</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">fs2</span><span>.</span><span class="identifier">io</span><span>.</span><span class="identifier">file</span><span>.</span><span class="type-name">Path</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">mercurievv</span><span>.</span><span class="identifier">aidclimbing</span><span>.</span><span class="identifier">checkpointall</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">mercurievv</span><span>.</span><span class="identifier">aidclimbing</span><span>.</span><span class="identifier">checkpoint</span><span>.</span><span class="type-name">Checkpoint</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">mercurievv</span><span>.</span><span class="identifier">aidclimbing</span><span>.</span><span class="identifier">checkpoint</span><span>.</span><span class="identifier">ce</span><span>.{</span><span class="type-name">CatsCheckpoint</span><span>, </span><span class="type-name">LogTell</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">mercurievv</span><span>.</span><span class="identifier">aidclimbing</span><span>.</span><span class="identifier">checkpoint</span><span>.</span><span class="identifier">file</span><span>.</span><span class="type-name">FileMemoize</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">log4cats</span><span>.</span><span class="type-name">Logger</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">log4cats</span><span>.</span><span class="identifier">noop</span><span>.</span><span class="type-name">NoOpLogger</span><span>
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">AgentPipeline</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+  </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">logger</span><span>: </span><span class="type-name">Logger</span><span>[</span><span class="type-name">IO</span><span>]       = </span><span class="type-name">NoOpLogger</span><span>[</span><span class="type-name">IO</span><span>]
+  </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">teller</span><span>: </span><span class="type-name">Tell</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">String</span><span>] = </span><span class="type-name">LogTell</span><span>[</span><span class="type-name">IO</span><span>]
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">callLLM</span><span>(</span><span class="identifier">prompt</span><span>: </span><span class="type-name">String</span><span>): </span><span class="type-name">IO</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">IO</span><span>(</span><span class="string-literal">s&quot;[LLM response to: </span><span class="substitution">$prompt</span><span class="string-literal">]&quot;</span><span>) </span><span class="comment">// replace with real client
+</span><span>
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">memoize</span><span> = </span><span class="type-name">FileMemoize</span><span>.</span><span class="identifier">string</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="type-name">Path</span><span>(</span><span class="string-literal">&quot;.agent-cache&quot;</span><span>))
+    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">cp</span><span>: </span><span class="type-name">Checkpoint</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">CatsCheckpoint</span><span>(</span><span class="identifier">memoize</span><span>)
+
+    </span><span class="keyword">val</span><span> </span><span class="identifier">rawInput</span><span> = </span><span class="string-literal">&quot;Summarize the quarterly report for ACME Corp&quot;</span><span>
+
+    </span><span class="keyword">for</span><span> {
+      </span><span class="comment">// Stage 1: cached after first run
+</span><span>      </span><span class="identifier">facts</span><span>    &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;extract&quot;</span><span>,   </span><span class="type-name">IO</span><span>(</span><span class="identifier">rawInput</span><span>), </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>],
+                    </span><span class="identifier">q</span><span> =&gt; </span><span class="identifier">callLLM</span><span>(</span><span class="string-literal">s&quot;Extract key facts: </span><span class="substitution">$q</span><span class="string-literal">&quot;</span><span>))
+
+      </span><span class="comment">// Stage 2: cached after first run
+</span><span>      </span><span class="identifier">enriched</span><span> &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;enrich&quot;</span><span>,    </span><span class="type-name">IO</span><span>(</span><span class="identifier">facts</span><span>),    </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>],
+                    </span><span class="identifier">f</span><span> =&gt; </span><span class="identifier">callLLM</span><span>(</span><span class="string-literal">s&quot;Enrich with context: </span><span class="substitution">$f</span><span class="string-literal">&quot;</span><span>))
+
+      </span><span class="comment">// Stage 3: iterate on this prompt freely — stages 1 &amp; 2 stay cached
+</span><span>      </span><span class="identifier">summary</span><span>  &lt;- </span><span class="identifier">cp</span><span>.</span><span class="identifier">checkpoint</span><span>(</span><span class="string-literal">&quot;summarize&quot;</span><span>, </span><span class="type-name">IO</span><span>(</span><span class="identifier">enriched</span><span>), </span><span class="identifier">identity</span><span>[</span><span class="type-name">String</span><span>],
+                    </span><span class="identifier">e</span><span> =&gt; </span><span class="identifier">callLLM</span><span>(</span><span class="string-literal">s&quot;Write a concise executive summary: </span><span class="substitution">$e</span><span class="string-literal">&quot;</span><span>))
+
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="identifier">summary</span><span>)
+    } </span><span class="keyword">yield</span><span> ()
+  }
+}</span></code></pre>
+        <p>Run it:</p>
+        <pre><code>scala-cli pipeline.sc</code></pre>
+        <p>First run: all three LLM calls execute, results written to <code>.agent-cache/</code>.<br>
+        Second run (no input change): all three stages load from cache instantly.<br>
+        Iterate on the <code>&quot;summarize&quot;</code> prompt: only stage 3 re-runs; stages 1 &amp; 2 replay from cache.</p>
 
         
 <hr class="footer-rule"/>

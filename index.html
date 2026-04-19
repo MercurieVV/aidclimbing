@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Aidclimbing</title>
+  <title>aidclimbing</title>
   
   <meta name="author" content="Viktors Kalinins"/>
   
@@ -86,7 +86,7 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="getting-started.html">Getting Started</a></li>
-    <li class="level1 active nav-leaf"><a href="#">Aidclimbing</a></li>
+    <li class="level1 active nav-leaf"><a href="#">aidclimbing</a></li>
   </ul>
 
 </nav>
@@ -95,12 +95,14 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Aidclimbing</a></p>
+  <p class="header"><a href="#">aidclimbing</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#what-it-does">What it does</a></li>
+    <li class="level1 nav-leaf"><a href="#ai-agentic-workflows">AI agentic workflows</a></li>
     <li class="level1 nav-leaf"><a href="#modules">Modules</a></li>
     <li class="level1 nav-leaf"><a href="#installation">Installation</a></li>
-    <li class="level1 nav-leaf"><a href="#documentation">Documentation</a></li>
+    <li class="level1 nav-leaf"><a href="#how-checkpoints-work">How checkpoints work</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -109,22 +111,70 @@
 
       <main class="content">
 
-        <h1 id="aidclimbing" class="title">Aidclimbing</h1>
-        <p><code>aidclimbing</code> provides reusable checkpointing abstractions for Scala pipelines.</p>
+        <h1 id="aidclimbing" class="title">aidclimbing</h1>
+        <p>Checkpointing library for exploring Scala pipelines, streams, and data flows.</p>
+        
+        <h2 id="what-it-does" class="section"><a class="anchor-link left" href="#what-it-does"><i class="icofont-laika link">&#xef71;</i></a>What it does</h2>
+        <p><code>aidclimbing</code> adds named checkpoints to your processing pipeline. A checkpoint has an ID and an input key: if you run the same stage again with the same input, the cached result is returned instead of recomputing. This is the FP purity contract applied at the pipeline-stage level — <strong>same input, same output, skip the work</strong>.</p>
+        <pre><code>Input → [checkpoint &quot;parse&quot;] → [checkpoint &quot;enrich&quot;] → [checkpoint &quot;render&quot;] → Output
+               ↓                         ↓                        ↓
+        cache miss: run          cache hit: skip          cache miss: run</code></pre>
+        <p>Think of it as a lightweight alternative to notebooks for iterative pipeline research with <code>scala-cli</code>. Build a pipeline as ordinary Scala code, annotate expensive stages with checkpoints, and iterate freely — only changed stages re-execute.</p>
+        
+        <h2 id="ai-agentic-workflows" class="section"><a class="anchor-link left" href="#ai-agentic-workflows"><i class="icofont-laika link">&#xef71;</i></a>AI agentic workflows</h2>
+        <p>LLM calls are slow and expensive. When you&#39;re iterating on one stage of an AI agent pipeline, you don&#39;t want to re-run upstream LLM and tool calls every time. <code>aidclimbing</code> checkpoints each stage: as long as the input to a stage hasn&#39;t changed, the cached result is replayed instantly.</p>
+        <pre><code>prompt → [checkpoint &quot;llm-extract&quot;] → [checkpoint &quot;tool-call&quot;] → [checkpoint &quot;summarize&quot;] → output
+                  ↓                             ↓                           ↓
+           cached (no change)           cached (no change)           cache miss: re-run</code></pre>
+        <p>Change the summarization prompt → only the last stage re-executes. File-backed persistence means cached results survive restarts, so you never pay twice for the same LLM call.</p>
         
         <h2 id="modules" class="section"><a class="anchor-link left" href="#modules"><i class="icofont-laika link">&#xef71;</i></a>Modules</h2>
-        <ul>
-          <li><code>checkpoint-core</code>: base <code>Checkpoint</code> and <code>Memoize</code> abstractions</li>
-          <li><code>checkpoint-ce</code>: Cats Effect integrations</li>
-          <li><code>checkpoint-file</code>: FS2-backed file persistence</li>
-          <li><code>checkpoint-all</code>: convenience import that re-exports the full surface area</li>
-        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>Module</th>
+              <th>Artifact</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>checkpoint-core</code></td>
+              <td><code>checkpoint-core</code></td>
+              <td><code>Checkpoint</code> and <code>Memoize</code> traits</td>
+            </tr>
+            <tr>
+              <td><code>checkpoint-ce</code></td>
+              <td><code>checkpoint-ce</code></td>
+              <td>Cats Effect + Log4Cats integration</td>
+            </tr>
+            <tr>
+              <td><code>checkpoint-file</code></td>
+              <td><code>checkpoint-file</code></td>
+              <td>FS2-backed file persistence</td>
+            </tr>
+            <tr>
+              <td><code>checkpoint-all</code></td>
+              <td><code>checkpoint-all</code></td>
+              <td>Convenience re-export of all modules</td>
+            </tr>
+          </tbody>
+        </table>
         
         <h2 id="installation" class="section"><a class="anchor-link left" href="#installation"><i class="icofont-laika link">&#xef71;</i></a>Installation</h2>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.mercurievv.aidclimbing&quot;</span><span> %% </span><span class="string-literal">&quot;checkpoint-all&quot;</span><span> % </span><span class="string-literal">&quot;0.2.1-3-0bf77cf-SNAPSHOT&quot;</span></code></pre>
+        <p><strong>SBT:</strong></p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.mercurievv.aidclimbing&quot;</span><span> %% </span><span class="string-literal">&quot;checkpoint-all&quot;</span><span> % </span><span class="string-literal">&quot;0.3.0-1-aaebdda-SNAPSHOT&quot;</span></code></pre>
+        <p><strong>scala-cli:</strong></p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;io.github.mercurievv.aidclimbing::checkpoint-all:0.3.0-1-aaebdda-SNAPSHOT&quot;</span></code></pre>
         
-        <h2 id="documentation" class="section"><a class="anchor-link left" href="#documentation"><i class="icofont-laika link">&#xef71;</i></a>Documentation</h2>
-        <p>See the getting started guide in this site navigation.</p>
+        <h2 id="how-checkpoints-work" class="section"><a class="anchor-link left" href="#how-checkpoints-work"><i class="icofont-laika link">&#xef71;</i></a>How checkpoints work</h2>
+        <pre><code>cp.checkpoint(id, inputEffect, keyFn, compute)
+               │       │          │       └── expensive computation: A =&gt; F[V]
+               │       │          └────────── extract cache key from input: A =&gt; K
+               │       └───────────────────── effect producing input: F[A]
+               └───────────────────────────── stable name for this stage</code></pre>
+        <p>Cache key = <code>&quot;$id::${keyFn(input).show}&quot;</code>. Same key → cached result returned, <code>compute</code> skipped.</p>
+        <p>See the <a href="getting-started.html">Getting Started</a> guide for full examples including <code>scala-cli</code> usage.</p>
 
         
 <hr class="footer-rule"/>
