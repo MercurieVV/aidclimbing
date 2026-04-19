@@ -81,6 +81,7 @@ object FileMemoize {
     ) {
       override def toRepr[V](v: V): String = v.toString
 
+      @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
       override def fromRepr[V: ClassTag](repr: String): Either[Throwable, V] =
         Try {
           (implicitly[ClassTag[V]].runtimeClass match {

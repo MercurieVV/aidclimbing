@@ -74,7 +74,6 @@ lazy val root = (project in file("."))
     prePush         := {
       val state = Keys.state.value
       val commands = Seq(
-        """set ThisBuild / scalacOptions ~= (_.filterNot(_ == "-Werror"))""",
         "clean",
         "githubWorkflowCheck",
         "headerCheckAll",
@@ -82,6 +81,7 @@ lazy val root = (project in file("."))
         "scalafmtSbt",
         "test",
         "mimaReportBinaryIssues",
+        """set ThisBuild / scalacOptions ~= (_.filterNot(_ == "-Werror"))""",
         "doc",
         "docs/tlSite",
       )
