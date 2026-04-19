@@ -23,6 +23,7 @@ import fs2.Stream
 import fs2.io.file.{Files, Path}
 import io.github.mercurievv.aidclimbing.checkpoint.Memoize
 
+import java.nio.charset.StandardCharsets
 import scala.reflect.ClassTag
 import scala.util.Try
 
@@ -42,8 +43,11 @@ abstract class FileMemoize[F[_]: Async: Files, R](
     extends Memoize[F] {
   override type Repr = R
 
+  private def keyPath[K: Show](key: K): Path =
+    dir / FileMemoize.encodeKey(key.show)
+
   override def get[K: Show, V: ClassTag](key: K): F[Option[V]] = {
-    val p = dir / key.show
+    val p = keyPath(key)
     Files[F].exists(p).flatMap {
       case false => none[V].pure[F]
       case true  =>
@@ -54,17 +58,17 @@ abstract class FileMemoize[F[_]: Async: Files, R](
   }
 
   override def put[K: Show, V](key: K, value: V): F[Unit] = {
-    val p = dir / key.show
-    Files[F].createDirectories(dir) >> writeFile(p, toRepr(value))
+    val p = keyPath(key)
+    Files[F].createDirectories(p.parent.getOrElse(dir)) >> writeFile(p, toRepr(value))
   }
 
   override def delete[K: Show](key: K): F[Unit] =
-    Files[F].deleteIfExists(dir / key.show).void
+    Files[F].deleteIfExists(keyPath(key)).void
 
   override def deleteAll(keyPrefix: String): F[Unit] =
     Files[F]
       .list(dir)
-      .filter(_.fileName.toString.startsWith(keyPrefix))
+      .filter(_.fileName.toString.startsWith(FileMemoize.encodeKey(keyPrefix)))
       .evalMap(Files[F].deleteIfExists(_).void)
       .compile
       .drain
@@ -72,6 +76,23 @@ abstract class FileMemoize[F[_]: Async: Files, R](
 }
 
 object FileMemoize {
+
+  private val SafeCharPattern = "[A-Za-z0-9._-]".r
+
+  private[file] def encodeKey(key: String): String = {
+    val builder = new StringBuilder
+    key.foreach { ch =>
+      if (SafeCharPattern.pattern.matcher(ch.toString).matches()) builder += ch
+      else {
+        val bytes = ch.toString.getBytes(StandardCharsets.UTF_8)
+        bytes.foreach { byte =>
+          builder  += '%'
+          builder ++= f"${byte & 0xff}%02X"
+        }
+      }
+    }
+    builder.result()
+  }
 
   def string[F[_]: Async: Files](dir: Path): Memoize[F] =
     new FileMemoize[F, String](

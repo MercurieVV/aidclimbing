@@ -30,7 +30,7 @@ object Checkpoint {
   def apply[F[_], Repr](implicit ev: Checkpoint[F]): Checkpoint[F] = ev
 
   def compositeKey[K: Show](checkpointId: String, key: K): String =
-    s"$checkpointId::${key.show}"
+    s"$checkpointId/${key.show}"
 
   implicit def fromMonad[F[_]: Monad](implicit m: Memoize[F], tell: Tell[F, String]): Checkpoint[F] =
     new Checkpoint[F] {

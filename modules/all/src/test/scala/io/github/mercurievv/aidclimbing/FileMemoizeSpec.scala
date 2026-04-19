@@ -21,6 +21,8 @@ import fs2.io.file.{Files, Path}
 import io.github.mercurievv.aidclimbing.checkpoint.file.FileMemoize
 import munit.CatsEffectSuite
 
+import scala.concurrent.duration.DurationInt
+
 class FileMemoizeSpec extends CatsEffectSuite {
 
   val tempDir: Fixture[Path] = ResourceSuiteLocalFixture(
@@ -71,5 +73,15 @@ class FileMemoizeSpec extends CatsEffectSuite {
     m.put("k", "x") >>
       m.delete("k") >>
       m.get[String, String]("k").map(v => assertEquals(v, None))
+  }
+
+  test("keys containing path separators do not hang and roundtrip") {
+    val m = memoize
+    val key = "clear-frames-dir::./frames"
+
+    m.put(key, "done")
+      .timeout(2.seconds)
+      .flatMap(_ => m.get[String, String](key).timeout(2.seconds))
+      .map(v => assertEquals(v, Some("done")))
   }
 }
