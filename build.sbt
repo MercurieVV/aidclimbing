@@ -131,8 +131,8 @@ lazy val filePersister = (project in file("modules/file"))
     commonSettings,
     name                 := "checkpoint-file",
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-io" % fs2Version,
-      "io.circe" %% "circe-core" % "0.14.10",
+      "co.fs2"   %% "fs2-io"       % fs2Version,
+      "io.circe" %% "circe-core"   % "0.14.10",
       "io.circe" %% "circe-parser" % "0.14.10",
     ),
   )
@@ -141,9 +141,10 @@ lazy val fs2 = (project in file("modules/fs2"))
   .dependsOn(core)
   .settings(
     commonSettings,
-    name                 := "checkpoint-fs2",
-    libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % fs2Version,
+    name                  := "checkpoint-fs2",
+    mimaPreviousArtifacts := Set.empty,
+    libraryDependencies  ++= Seq(
+      "co.fs2"        %% "fs2-core"    % fs2Version,
       "org.typelevel" %% "cats-effect" % catsEffectVersion,
     ),
   )

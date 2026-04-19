@@ -40,9 +40,7 @@ class StreamCheckpoint[F[_]: Concurrent](memoize: Memoize[F]) extends Checkpoint
           case Some(cached) => Stream.emits(cached)
           case None         =>
             Stream.evalSeq(
-              compute(a)
-                .compile
-                .toVector
+              compute(a).compile.toVector
                 .flatTap(values => memoize.put(key, values)),
             )
         }
@@ -50,6 +48,7 @@ class StreamCheckpoint[F[_]: Concurrent](memoize: Memoize[F]) extends Checkpoint
 }
 
 object StreamCheckpoint {
+
   type StreamF[F[_]] = {
     type L[A] = Stream[F, A]
   }

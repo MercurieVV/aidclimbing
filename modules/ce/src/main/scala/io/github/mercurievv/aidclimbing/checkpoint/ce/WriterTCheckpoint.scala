@@ -51,6 +51,7 @@ class WriterTCheckpoint[F[_]: Monad, W: Monoid](
 }
 
 object WriterTCheckpoint {
+
   type WriterTF[F[_], W] = {
     type L[A] = WriterT[F, W, A]
   }
@@ -58,6 +59,6 @@ object WriterTCheckpoint {
   def apply[F[_]: Monad, W: Monoid](
     memoize: Memoize[F],
     writeT: (Any, Boolean) => W,
-  ): WriterTCheckpoint[F, W] =
+  ): Checkpoint[WriterTF[F, W]#L] =
     new WriterTCheckpoint(memoize, writeT)
 }

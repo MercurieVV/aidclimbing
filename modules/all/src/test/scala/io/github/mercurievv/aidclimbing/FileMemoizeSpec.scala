@@ -29,6 +29,7 @@ object FileMemoizeSpec {
   final case class JsonValue(name: String, count: Int)
 
   object JsonValue {
+
     implicit val encoder: Encoder[JsonValue] =
       Encoder.forProduct2("name", "count")(value => (value.name, value.count))
 

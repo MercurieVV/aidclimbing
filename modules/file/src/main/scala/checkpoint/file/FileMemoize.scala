@@ -167,9 +167,8 @@ object FileMemoize {
         Try {
           val input = new ByteArrayInputStream(repr)
           val objectInput = new ObjectInputStream(input)
-          try {
-            objectInput.readObject()
-          } finally {
+          try objectInput.readObject()
+          finally {
             objectInput.close()
             input.close()
           }
