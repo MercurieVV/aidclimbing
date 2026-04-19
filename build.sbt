@@ -46,6 +46,7 @@ lazy val commonSettings = Seq(
   semanticdbEnabled    := true,
   semanticdbVersion    := scalafixSemanticdb.revision,
   publish / skip       := isAlreadyPublished.value,
+  scalacOptions       ++= Seq("-Werror"),
   wartremoverWarnings ++= {
     if (scalaBinaryVersion.value == "2.13") {
       Seq(
