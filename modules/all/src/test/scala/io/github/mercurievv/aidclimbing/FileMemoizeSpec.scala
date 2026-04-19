@@ -19,11 +19,28 @@ package io.github.mercurievv.aidclimbing
 import cats.effect.IO
 import fs2.io.file.{Files, Path}
 import io.github.mercurievv.aidclimbing.checkpoint.file.FileMemoize
+import io.circe.{Decoder, Encoder}
 import munit.CatsEffectSuite
 
+import java.io.Serializable
 import scala.concurrent.duration.DurationInt
 
+object FileMemoizeSpec {
+  final case class JsonValue(name: String, count: Int)
+
+  object JsonValue {
+    implicit val encoder: Encoder[JsonValue] =
+      Encoder.forProduct2("name", "count")(value => (value.name, value.count))
+
+    implicit val decoder: Decoder[JsonValue] =
+      Decoder.forProduct2("name", "count")(JsonValue.apply)
+  }
+
+  final case class JavaValue(name: String, count: Int) extends Serializable
+}
+
 class FileMemoizeSpec extends CatsEffectSuite {
+  import FileMemoizeSpec._
 
   val tempDir: Fixture[Path] = ResourceSuiteLocalFixture(
     "tempDir",
@@ -83,5 +100,21 @@ class FileMemoizeSpec extends CatsEffectSuite {
       .timeout(2.seconds)
       .flatMap(_ => m.get[String, String](key).timeout(2.seconds))
       .map(v => assertEquals(v, Some("done")))
+  }
+
+  test("Circe memoize serializes and deserializes values") {
+    val m = FileMemoize.circe[IO, JsonValue](tempDir())
+    val value = JsonValue("hello", 42)
+
+    m.put("json", value) >>
+      m.get[String, JsonValue]("json").map(v => assertEquals(v, Some(value)))
+  }
+
+  test("Java serialization memoize serializes and deserializes values") {
+    val m = FileMemoize.javaSerialization[IO](tempDir())
+    val value = JavaValue("hello", 42)
+
+    m.put("java", value) >>
+      m.get[String, JavaValue]("java").map(v => assertEquals(v, Some(value)))
   }
 }

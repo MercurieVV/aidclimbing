@@ -42,4 +42,7 @@ package object checkpointall extends CheckpointSyntax {
 
   type FileMemoize[F[_], Repr] = checkpoint.file.FileMemoize[F, Repr]
   val FileMemoize = checkpoint.file.FileMemoize
+
+  type StreamCheckpoint[F[_]] = checkpoint.fs2.StreamCheckpoint[F]
+  val StreamCheckpoint = checkpoint.fs2.StreamCheckpoint
 }

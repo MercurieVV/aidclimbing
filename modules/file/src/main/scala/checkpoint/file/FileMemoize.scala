@@ -22,7 +22,11 @@ import cats.syntax.all._
 import fs2.Stream
 import fs2.io.file.{Files, Path}
 import io.github.mercurievv.aidclimbing.checkpoint.Memoize
+import io.circe.parser.decode
+import io.circe.syntax._
+import io.circe.{Decoder, Encoder}
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream, Serializable}
 import java.nio.charset.StandardCharsets
 import scala.reflect.ClassTag
 import scala.util.Try
@@ -109,5 +113,76 @@ object FileMemoize {
             case _                          => repr
           }).asInstanceOf[V]
         }.toEither
+    }
+
+  def circe[F[_]: Async: Files, V: Encoder: Decoder: ClassTag](dir: Path): Memoize[F] =
+    new FileMemoize[F, String](
+      dir,
+      writeFile = (p, s) => Stream.emit(s).through(fs2.text.utf8.encode).through(Files[F].writeAll(p)).compile.drain,
+      readFile  = p => Files[F].readAll(p).through(fs2.text.utf8.decode).compile.string,
+    ) {
+      @SuppressWarnings(Array("org.wartremover.warts.Throw"))
+      override def toRepr[A](value: A): String =
+        value match {
+          case typed: V => typed.asJson.noSpaces
+          case _        =>
+            throw new ClassCastException(
+              s"Expected ${implicitly[ClassTag[V]].runtimeClass.getName}, got ${value.getClass.getName}",
+            )
+        }
+
+      @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
+      override def fromRepr[A: ClassTag](repr: String): Either[Throwable, A] =
+        if (implicitly[ClassTag[A]].runtimeClass == implicitly[ClassTag[V]].runtimeClass)
+          decode[V](repr).map(_.asInstanceOf[A])
+        else
+          Left(
+            new ClassCastException(
+              s"Expected ${implicitly[ClassTag[V]].runtimeClass.getName}, got ${implicitly[ClassTag[A]].runtimeClass.getName}",
+            ),
+          )
+    }
+
+  def javaSerialization[F[_]: Async: Files](dir: Path): Memoize[F] =
+    new FileMemoize[F, Array[Byte]](
+      dir,
+      writeFile = (p, bytes) => Stream.emits(bytes).covary[F].through(Files[F].writeAll(p)).compile.drain,
+      readFile  = p => Files[F].readAll(p).compile.to(Array),
+    ) {
+      @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
+      override def toRepr[V](value: V): Array[Byte] = {
+        val output = new ByteArrayOutputStream()
+        val objectOutput = new ObjectOutputStream(output)
+        try {
+          objectOutput.writeObject(value.asInstanceOf[Serializable])
+          objectOutput.flush()
+          output.toByteArray
+        } finally {
+          objectOutput.close()
+          output.close()
+        }
+      }
+
+      override def fromRepr[V: ClassTag](repr: Array[Byte]): Either[Throwable, V] =
+        Try {
+          val input = new ByteArrayInputStream(repr)
+          val objectInput = new ObjectInputStream(input)
+          try {
+            objectInput.readObject()
+          } finally {
+            objectInput.close()
+            input.close()
+          }
+        }.toEither.flatMap { value =>
+          value match {
+            case typed: V => Right(typed)
+            case _        =>
+              Left(
+                new ClassCastException(
+                  s"Expected ${implicitly[ClassTag[V]].runtimeClass.getName}, got ${value.getClass.getName}",
+                ),
+              )
+          }
+        }
     }
 }

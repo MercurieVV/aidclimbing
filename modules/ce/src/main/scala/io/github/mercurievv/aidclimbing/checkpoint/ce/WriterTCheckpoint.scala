@@ -17,7 +17,7 @@
 package io.github.mercurievv.aidclimbing.checkpoint.ce
 
 import cats.data.WriterT
-import cats.syntax.all.*
+import cats.syntax.all._
 import cats.{Monad, Monoid, Show}
 import io.github.mercurievv.aidclimbing.checkpoint.{Checkpoint, Memoize}
 
@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 class WriterTCheckpoint[F[_]: Monad, W: Monoid](
   memoize: Memoize[F],
   writeT: (Any, Boolean) => W)
-    extends Checkpoint[[A] =>> WriterT[F, W, A]]:
+    extends Checkpoint[WriterTCheckpoint.WriterTF[F, W]#L] {
 
   def checkpoint[A, K: Show, V: Show: ClassTag](
     checkpointId: String,
@@ -48,11 +48,16 @@ class WriterTCheckpoint[F[_]: Monad, W: Monoid](
           }
       }
     }
+}
 
-object WriterTCheckpoint:
+object WriterTCheckpoint {
+  type WriterTF[F[_], W] = {
+    type L[A] = WriterT[F, W, A]
+  }
 
   def apply[F[_]: Monad, W: Monoid](
     memoize: Memoize[F],
     writeT: (Any, Boolean) => W,
-  ): Checkpoint[[A] =>> WriterT[F, W, A]] =
+  ): WriterTCheckpoint[F, W] =
     new WriterTCheckpoint(memoize, writeT)
+}

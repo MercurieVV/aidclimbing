@@ -63,7 +63,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  .aggregate(core, ce, filePersister, all, docs)
+  .aggregate(core, ce, fs2, filePersister, all, docs)
   .settings(
     name            := "aidclimbing",
     publish         := {},
@@ -94,7 +94,7 @@ lazy val root = (project in file("."))
   )
 
 lazy val all = (project in file("modules/all"))
-  .dependsOn(core, ce, filePersister)
+  .dependsOn(core, ce, fs2, filePersister)
   .settings(
     commonSettings,
     name                 := "checkpoint-all",
@@ -132,6 +132,19 @@ lazy val filePersister = (project in file("modules/file"))
     name                 := "checkpoint-file",
     libraryDependencies ++= Seq(
       "co.fs2" %% "fs2-io" % fs2Version,
+      "io.circe" %% "circe-core" % "0.14.10",
+      "io.circe" %% "circe-parser" % "0.14.10",
+    ),
+  )
+
+lazy val fs2 = (project in file("modules/fs2"))
+  .dependsOn(core)
+  .settings(
+    commonSettings,
+    name                 := "checkpoint-fs2",
+    libraryDependencies ++= Seq(
+      "co.fs2" %% "fs2-core" % fs2Version,
+      "org.typelevel" %% "cats-effect" % catsEffectVersion,
     ),
   )
 
