@@ -40,6 +40,6 @@ package object checkpointall extends CheckpointSyntax {
   type WriterTCheckpoint[F[_], W] = checkpoint.ce.WriterTCheckpoint[F, W]
   val WriterTCheckpoint = checkpoint.ce.WriterTCheckpoint
 
-  type FilePersister[F[_], Repr] = checkpoint.file.FilePersister[F, Repr]
-  val FilePersister = checkpoint.file.FilePersister
+  type FileMemoize[F[_], Repr] = checkpoint.file.FileMemoize[F, Repr]
+  val FileMemoize = checkpoint.file.FileMemoize
 }

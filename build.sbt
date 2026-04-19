@@ -3,7 +3,7 @@ import scala.sys.process._
 val scala213 = "2.13.18"
 val scala3 = "3.3.7"
 
-ThisBuild / tlBaseVersion              := "0.2"
+ThisBuild / tlBaseVersion              := "0.3"
 ThisBuild / licenses                   += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
 ThisBuild / startYear                  := Some(2026)
 ThisBuild / scalaVersion               := scala213
@@ -40,16 +40,12 @@ inThisBuild(
 )
 
 lazy val commonSettings = Seq(
-  organization          := "io.github.mercurievv.aidclimbing",
-  pgpPassphrase         := sys.env.get("GPG_PASSPHRASE").map(_.toArray),
-  headerLicense         := Some(HeaderLicense.ALv2("2026", "Viktors Kalinins")),
-  semanticdbEnabled     := true,
-  semanticdbVersion     := scalafixSemanticdb.revision,
-  publish / skip        := isAlreadyPublished.value,
-  mimaPreviousArtifacts := {
-    if (scalaBinaryVersion.value == "3") Set.empty
-    else Set(organization.value %% moduleName.value % "0.2.0")
-  },
+  organization         := "io.github.mercurievv.aidclimbing",
+  pgpPassphrase        := sys.env.get("GPG_PASSPHRASE").map(_.toArray),
+  headerLicense        := Some(HeaderLicense.ALv2("2026", "Viktors Kalinins")),
+  semanticdbEnabled    := true,
+  semanticdbVersion    := scalafixSemanticdb.revision,
+  publish / skip       := isAlreadyPublished.value,
   wartremoverWarnings ++= {
     if (scalaBinaryVersion.value == "2.13") {
       Seq(

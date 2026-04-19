@@ -24,6 +24,7 @@ import fs2.io.file.{Files, Path}
 import io.github.mercurievv.aidclimbing.checkpoint.Memoize
 
 import scala.reflect.ClassTag
+import scala.util.Try
 
 /** File-system Memoize.
   *
@@ -34,7 +35,7 @@ import scala.reflect.ClassTag
   * @param readFile
   *   reads a Repr from a Path
   */
-class FilePersister[F[_]: Async: Files, R](
+abstract class FileMemoize[F[_]: Async: Files, R](
   dir: Path,
   writeFile: (Path, R) => F[Unit],
   readFile: Path => F[R])
@@ -68,24 +69,28 @@ class FilePersister[F[_]: Async: Files, R](
       .compile
       .drain
 
-  override def toRepr[V](v: V): R = ???
-
-  override def fromRepr[V: ClassTag](repr: R): Either[Throwable, V] = ???
 }
 
-object FilePersister {
-
-  def apply[F[_]: Async: Files, Repr](
-    dir: Path,
-    writeFile: (Path, Repr) => F[Unit],
-    readFile: Path => F[Repr],
-  ): Memoize[F] =
-    new FilePersister(dir, writeFile, readFile)
+object FileMemoize {
 
   def string[F[_]: Async: Files](dir: Path): Memoize[F] =
-    new FilePersister[F, String](
+    new FileMemoize[F, String](
       dir,
       writeFile = (p, s) => Stream.emit(s).through(fs2.text.utf8.encode).through(Files[F].writeAll(p)).compile.drain,
       readFile  = p => Files[F].readAll(p).through(fs2.text.utf8.decode).compile.string,
-    )
+    ) {
+      override def toRepr[V](v: V): String = v.toString
+
+      override def fromRepr[V: ClassTag](repr: String): Either[Throwable, V] =
+        Try {
+          (implicitly[ClassTag[V]].runtimeClass match {
+            case c if c == classOf[String]  => repr
+            case c if c == classOf[Int]     => repr.toInt
+            case c if c == classOf[Long]    => repr.toLong
+            case c if c == classOf[Double]  => repr.toDouble
+            case c if c == classOf[Boolean] => repr.toBoolean
+            case _                          => repr
+          }).asInstanceOf[V]
+        }.toEither
+    }
 }
