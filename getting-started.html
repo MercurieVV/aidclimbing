@@ -115,11 +115,11 @@
         
         <h2 id="sbt-project" class="section"><a class="anchor-link left" href="#sbt-project"><i class="icofont-laika link">&#xef71;</i></a>SBT project</h2>
         <p>Add the dependency:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.mercurievv.aidclimbing&quot;</span><span> %% </span><span class="string-literal">&quot;checkpoint-all&quot;</span><span> % </span><span class="string-literal">&quot;0.3.0-1-aaebdda-SNAPSHOT&quot;</span></code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.mercurievv.aidclimbing&quot;</span><span> %% </span><span class="string-literal">&quot;checkpoint-all&quot;</span><span> % </span><span class="string-literal">&quot;0.3.0-3-1094e14-SNAPSHOT&quot;</span></code></pre>
         
         <h2 id="scala-cli" class="section"><a class="anchor-link left" href="#scala-cli"><i class="icofont-laika link">&#xef71;</i></a>scala-cli</h2>
         <p>For scripts and one-off research, add directives at the top of your <code>.sc</code> file:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;io.github.mercurievv.aidclimbing::checkpoint-all:0.3.0-1-aaebdda-SNAPSHOT&quot;
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;io.github.mercurievv.aidclimbing::checkpoint-all:0.3.0-3-1094e14-SNAPSHOT&quot;
 //&gt; using dep &quot;org.typelevel::log4cats-noop:2.6.0&quot;</span></code></pre>
         <p>Run with:</p>
         <pre><code>scala-cli pipeline.sc</code></pre>
@@ -138,11 +138,11 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">log4cats</span><span>.</span><span class="identifier">noop</span><span>.</span><span class="type-name">NoOpLogger</span><span>
 
 </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">logger</span><span>: </span><span class="type-name">Logger</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">NoOpLogger</span><span>[</span><span class="type-name">IO</span><span>]
-</span><span class="comment">// logger: Logger[IO] = org.typelevel.log4cats.noop.NoOpLogger$$anon$1@7bd44b7f
+</span><span class="comment">// logger: Logger[IO] = org.typelevel.log4cats.noop.NoOpLogger$$anon$1@35794e67
 </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">teller</span><span>: </span><span class="type-name">Tell</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">String</span><span>] = </span><span class="type-name">LogTell</span><span>[</span><span class="type-name">IO</span><span>]
-</span><span class="comment">// teller: Tell[IO, String] = io.github.mercurievv.aidclimbing.checkpoint.ce.LogTell$$anon$1@49023507</span></code></pre>
+</span><span class="comment">// teller: Tell[IO, String] = io.github.mercurievv.aidclimbing.checkpoint.ce.LogTell$$anon$1@5368730a</span></code></pre>
         <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">cacheDir</span><span> = </span><span class="type-name">Path</span><span>(</span><span class="identifier">java</span><span>.</span><span class="identifier">nio</span><span>.</span><span class="identifier">file</span><span>.</span><span class="type-name">Files</span><span>.</span><span class="identifier">createTempDirectory</span><span>(</span><span class="string-literal">&quot;aidclimbing-&quot;</span><span>).</span><span class="identifier">toString</span><span>)
-</span><span class="comment">// cacheDir: Path = /tmp/aidclimbing-10742152368089344705
+</span><span class="comment">// cacheDir: Path = /tmp/aidclimbing-1752306701056877611
 </span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">program</span><span> = {
   </span><span class="keyword">val</span><span> </span><span class="identifier">memoize</span><span> = </span><span class="type-name">FileMemoize</span><span>.</span><span class="identifier">string</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">cacheDir</span><span>)
@@ -158,7 +158,7 @@
 }
 </span><span class="comment">// program: IO[(Int, Int, Int)] = FlatMap(
 //   ioe = Delay(
-//     thunk = cats.effect.IO$$$Lambda$12800/0x00000001035bb840@24a9780f,
+//     thunk = cats.effect.IO$$$Lambda$12927/0x0000000103592440@29bcffd3,
 //     event = cats.effect.tracing.TracingEvent$StackTrace
 //   ),
 //   f = &lt;function1&gt;,
@@ -187,7 +187,7 @@
 //       thunk = &lt;function0&gt;,
 //       event = cats.effect.tracing.TracingEvent$StackTrace
 //     ),
-//     f = io.github.mercurievv.aidclimbing.checkpoint.ce.CatsCheckpoint$$Lambda$12876/0x0000000103614840@6e4586fb,
+//     f = io.github.mercurievv.aidclimbing.checkpoint.ce.CatsCheckpoint$$Lambda$13003/0x00000001035df840@60b562cb,
 //     event = cats.effect.tracing.TracingEvent$StackTrace
 //   ),
 //   f = &lt;function1&gt;,
@@ -204,7 +204,7 @@
         <p>LLM calls are slow and costly. Checkpoint each stage so that changing one stage only re-runs that stage.
         Results survive restarts — you never pay twice for the same LLM call with the same input.</p>
         <pre><code class="nohighlight"><span class="comment">// pipeline.sc
-//&gt; using dep &quot;io.github.mercurievv.aidclimbing::checkpoint-all:0.3.0-1-aaebdda-SNAPSHOT&quot;
+//&gt; using dep &quot;io.github.mercurievv.aidclimbing::checkpoint-all:0.3.0-3-1094e14-SNAPSHOT&quot;
 //&gt; using dep &quot;org.typelevel::log4cats-noop:2.6.0&quot;
 </span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
