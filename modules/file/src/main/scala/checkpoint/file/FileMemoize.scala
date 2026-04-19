@@ -77,22 +77,17 @@ abstract class FileMemoize[F[_]: Async: Files, R](
 
 object FileMemoize {
 
-  private val SafeCharPattern = "[A-Za-z0-9._-]".r
+  private val SafeCharPattern = "[/A-Za-z0-9._-]".r
 
-  private[file] def encodeKey(key: String): String = {
-    val builder = new StringBuilder
-    key.foreach { ch =>
-      if (SafeCharPattern.pattern.matcher(ch.toString).matches()) builder += ch
-      else {
-        val bytes = ch.toString.getBytes(StandardCharsets.UTF_8)
-        bytes.foreach { byte =>
-          builder  += '%'
-          builder ++= f"${byte & 0xff}%02X"
-        }
-      }
+  private[file] def encodeKey(key: String): String =
+    key.foldLeft("") { (acc, ch) =>
+      val chStr = ch.toString
+      if (SafeCharPattern.pattern.matcher(chStr).matches()) acc + chStr
+      else
+        scala.collection.immutable.ArraySeq
+          .unsafeWrapArray(chStr.getBytes(StandardCharsets.UTF_8))
+          .foldLeft(acc)((a, byte) => a + "%" + f"${byte & 0xff}%02X")
     }
-    builder.result()
-  }
 
   def string[F[_]: Async: Files](dir: Path): Memoize[F] =
     new FileMemoize[F, String](

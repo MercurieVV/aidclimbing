@@ -40,14 +40,13 @@ inThisBuild(
 )
 
 lazy val commonSettings = Seq(
-  organization         := "io.github.mercurievv.aidclimbing",
-  pgpPassphrase        := sys.env.get("GPG_PASSPHRASE").map(_.toArray),
-  headerLicense        := Some(HeaderLicense.ALv2("2026", "Viktors Kalinins")),
-  semanticdbEnabled    := true,
-  semanticdbVersion    := scalafixSemanticdb.revision,
-  publish / skip       := isAlreadyPublished.value,
-  scalacOptions       ++= Seq("-Werror"),
-  wartremoverWarnings ++= {
+  organization       := "io.github.mercurievv.aidclimbing",
+  pgpPassphrase      := sys.env.get("GPG_PASSPHRASE").map(_.toArray),
+  headerLicense      := Some(HeaderLicense.ALv2("2026", "Viktors Kalinins")),
+  semanticdbEnabled  := true,
+  semanticdbVersion  := scalafixSemanticdb.revision,
+  publish / skip     := isAlreadyPublished.value,
+  wartremoverErrors ++= {
     if (scalaBinaryVersion.value == "2.13") {
       Seq(
         Wart.Var,
@@ -82,7 +81,7 @@ lazy val root = (project in file("."))
         "scalafmtSbt",
         "test",
         "mimaReportBinaryIssues",
-        """set ThisBuild / scalacOptions ~= (_.filterNot(_ == "-Werror"))""",
+//        """set ThisBuild / scalacOptions ~= (_.filterNot(_ == "-Werror"))""",
         "doc",
         "docs/tlSite",
       )
